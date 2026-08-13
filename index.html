@@ -797,8 +797,12 @@ CREATE TABLE IF NOT EXISTS app_settings (
     key TEXT PRIMARY KEY,
     shuttle_price INTEGER DEFAULT 26000,
     bank_config JSONB DEFAULT '{"bankId":"MB","accountNo":"","accountName":"","sepayToken":""}'::jsonb,
+    admin_pin TEXT DEFAULT '1234',
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Tự động thêm cột admin_pin nếu bảng đã tồn tại từ trước
+ALTER TABLE app_settings ADD COLUMN IF NOT EXISTS admin_pin TEXT DEFAULT '1234';
 
 -- 2. Bảng Người chơi
 CREATE TABLE IF NOT EXISTS players (
@@ -1240,6 +1244,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (appSettings.shuttle_price) {
                 shuttlePrice = appSettings.shuttle_price;
                 elements.inputShuttlePrice.value = shuttlePrice;
+            }
+            if (appSettings.admin_pin) {
+                adminPin = appSettings.admin_pin;
+                localStorage.setItem('badminton_admin_pin', adminPin);
             }
             if (appSettings.bank_config) {
                 bankConfig = appSettings.bank_config;

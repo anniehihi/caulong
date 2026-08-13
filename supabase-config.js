@@ -102,17 +102,33 @@
                     configToSave.adminPin = adminPin;
                 }
 
+                const payload = {
+                    key: 'default',
+                    shuttle_price: shuttlePrice,
+                    bank_config: configToSave,
+                    updated_at: new Date().toISOString()
+                };
+
+                if (adminPin) {
+                    payload.admin_pin = adminPin;
+                }
+
                 const { error } = await client
                     .from('app_settings')
-                    .upsert({
-                        key: 'default',
-                        shuttle_price: shuttlePrice,
-                        bank_config: configToSave,
-                        updated_at: new Date().toISOString()
-                    });
+                    .upsert(payload);
 
-                if (error) this.handleError("saveAppSettings", error);
-                return !error;
+                if (error) {
+                    if (error.code === 'PGRST204' || (error.message && error.message.includes('admin_pin'))) {
+                        delete payload.admin_pin;
+                        const { error: fallbackErr } = await client
+                            .from('app_settings')
+                            .upsert(payload);
+                        if (fallbackErr) this.handleError("saveAppSettings fallback", fallbackErr);
+                    } else {
+                        this.handleError("saveAppSettings", error);
+                    }
+                }
+                return true;
             } catch (err) {
                 console.error("Supabase saveAppSettings error:", err);
                 return false;

@@ -684,6 +684,76 @@ body {
     margin-top: 8px;
 }
 
+/* 3D Glassmorphic Victory Toast Banner */
+.victory-toast-3d {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-140%) scale(0.85);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 3500;
+    background: rgba(13, 16, 33, 0.96);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--web3-cyan);
+    border-radius: 24px;
+    padding: 16px 28px;
+    box-shadow: 
+        0 25px 60px rgba(0, 0, 0, 0.9),
+        0 0 40px rgba(0, 242, 254, 0.4),
+        inset 0 0 20px rgba(0, 242, 254, 0.15);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-width: 320px;
+    max-width: 90vw;
+    text-align: center;
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+}
+
+.victory-toast-3d.show {
+    transform: translateX(-50%) translateY(0) scale(1);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.victory-toast-header {
+    font-family: var(--font-title);
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    background: linear-gradient(90deg, #00f2fe 0%, #00ff87 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.victory-toast-winners {
+    font-family: var(--font-main);
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--web3-emerald);
+    text-shadow: 0 0 15px rgba(0, 255, 135, 0.5);
+}
+
+.victory-toast-losers {
+    font-family: var(--font-main);
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--web3-rose);
+    background: rgba(255, 8, 68, 0.1);
+    border: 1px solid rgba(255, 8, 68, 0.3);
+    padding: 4px 12px;
+    border-radius: 12px;
+    margin-top: 2px;
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
     .main-content {
@@ -739,6 +809,19 @@ body {
     </style>
 </head>
 <body>
+    <!-- 3D Glassmorphic Victory Toast Overlay -->
+    <div id="victoryToastOverlay" class="victory-toast-3d">
+        <div class="victory-toast-header">
+            <span>🏆 KẾT QUẢ TRẬN ĐẤU MỚI</span>
+        </div>
+        <div class="victory-toast-winners" id="victoryToastWinners">
+            🥇 Toàn & Tú Chiến Thắng
+        </div>
+        <div class="victory-toast-losers" id="victoryToastLosers">
+            ❌ Tiến & Nam đền +0.5 quả (13.000đ)
+        </div>
+    </div>
+
     <div class="app-container">
         <!-- Minimal Header -->
         <header class="app-header">
@@ -1730,9 +1813,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         showToast(`🏆 ${winnersStr} THẮNG  ➔  ❌ ${losersStr} THUA (+${deltaQuả} quả / ${formatMoney(deltaTiền)})!`);
+        show3DVictoryToast(winnersStr, losersStr, deltaQuả, deltaTiền);
 
         clearSelections();
         renderLeaderboard();
+    }
+
+    let victoryToastTimer = null;
+    function show3DVictoryToast(winnersStr, losersStr, deltaQuả, deltaTiền) {
+        const toastOverlay = document.getElementById('victoryToastOverlay');
+        const winnersEl = document.getElementById('victoryToastWinners');
+        const losersEl = document.getElementById('victoryToastLosers');
+
+        if (!toastOverlay || !winnersEl || !losersEl) return;
+
+        winnersEl.innerHTML = `🥇 ${winnersStr} CHIẾN THẮNG`;
+        losersEl.innerHTML = `❌ ${losersStr} đền +${deltaQuả} quả (${formatMoney(deltaTiền)})`;
+
+        toastOverlay.classList.add('show');
+
+        if (victoryToastTimer) clearTimeout(victoryToastTimer);
+        victoryToastTimer = setTimeout(() => {
+            toastOverlay.classList.remove('show');
+        }, 3800);
     }
 
     function checkAuto24hReminder() {

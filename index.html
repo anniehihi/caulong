@@ -1872,6 +1872,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     renderLeaderboard();
                     updateSelectionUI();
                     renderPlayerManagerList();
+                    showToast("⚡ Đã đồng bộ thay đổi danh sách người chơi!");
                 }
             } else if (tableName === 'match_history') {
                 const freshHistory = await SupabaseService.fetchMatchHistory();
@@ -1886,6 +1887,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }));
                     localStorage.setItem('badminton_penalty_history', JSON.stringify(historyLog));
                     renderHistoryLog();
+                    showToast("⚡ Có trận đấu mới vừa được đồng bộ!");
                 }
             } else if (tableName === 'app_settings') {
                 const freshSettings = await SupabaseService.fetchAppSettings();

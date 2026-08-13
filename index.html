@@ -1067,7 +1067,11 @@ ALTER PUBLICATION supabase_realtime ADD TABLE app_settings, players, match_histo
                     </div>
 
                     <div class="payment-actions">
-                        <button id="btnDownloadQr" class="btn btn-dark btn-block btn-lg">
+                        <button id="btnShareZaloModal" class="btn btn-block" style="background: linear-gradient(135deg, #0068ff 0%, #004fb9 100%); color: #fff; font-weight: 700;">
+                            <i data-lucide="share-2"></i> 📲 GỬI HÓA ĐƠN & Mã QR QUA ZALO
+                        </button>
+
+                        <button id="btnDownloadQr" class="btn btn-dark btn-block btn-lg" style="margin-top: 6px;">
                             <i data-lucide="download"></i> Tải / Lưu Ảnh Mã QR MBBank
                         </button>
 
@@ -1333,6 +1337,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnCopyMemo: document.getElementById('btnCopyMemo'),
         btnDownloadQr: document.getElementById('btnDownloadQr'),
         btnMarkPaid: document.getElementById('btnMarkPaid'),
+        btnShareZaloModal: document.getElementById('btnShareZaloModal'),
 
         // Add & Manage Players Modal
         addPlayerModal: document.getElementById('addPlayerModal'),
@@ -1762,6 +1767,42 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.paymentModal.classList.add('active');
     }
 
+    function shareZaloInvoice(playerName) {
+        const count = playerPenalties[playerName] || 0;
+        if (count <= 0) {
+            showToast(`⚠️ ${playerName} hiện không có nợ cầu.`);
+            return;
+        }
+        const amount = count * shuttlePrice;
+        const accountNo = bankConfig.accountNo || '---';
+        const accountName = bankConfig.accountName || '';
+        const bankInfo = BANK_MAPPING[bankConfig.bankId || 'MB'] || BANK_MAPPING['MB'];
+        const memo = `CAULONG ${playerName}`;
+
+        const shareText = `🏸 [CẦU LÔNG - ĐỀN CẦU]\n` +
+            `Chào ${playerName}, tổng nợ đền cầu hiện tại của bạn là: ${count} quả (${formatMoney(amount)}).\n\n` +
+            `👉 Chuyển khoản ngân hàng:\n` +
+            `- Ngân hàng: ${bankInfo.name}\n` +
+            `- STK: ${accountNo}\n` +
+            `${accountName ? `- Tên TK: ${accountName}\n` : ''}` +
+            `- Nội dung CK: ${memo}\n\n` +
+            `Cảm ơn bạn! 🏸✨`;
+
+        if (navigator.share) {
+            navigator.share({
+                title: `Hóa đơn đền cầu - ${playerName}`,
+                text: shareText
+            }).catch(err => {
+                console.log("Share API closed:", err);
+            });
+        } else {
+            navigator.clipboard.writeText(shareText).then(() => {
+                showToast("📋 Đã copy tin nhắn nhắc nợ! Mở Zalo để dán và gửi.");
+                window.open("https://zalo.me/", "_blank");
+            });
+        }
+    }
+
     function markPlayerAsPaid(playerName) {
         playerPenalties[playerName] = 0;
         saveState();
@@ -1857,6 +1898,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         <button class="btn-pay-qr" data-pay-name="${name}">
                             💳 QR CẦU
                         </button>
+                        <button class="btn-pay-qr btn-zalo-share" data-zalo-name="${name}" style="background: linear-gradient(135deg, #0068ff 0%, #004fb9 100%); color: #fff; border: none; font-weight:700;" title="Gửi hóa đơn Zalo">
+                            📲 Zalo
+                        </button>
                     ` : ''}
 
                     ${isAdmin ? `
@@ -1891,11 +1935,18 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.totalShuttlesBadge.textContent = `${netTotalShuttles} quả`;
         elements.totalMoneyBadge.textContent = netTotalMoney < 0 ? `-${formatMoney(Math.abs(netTotalMoney))}` : formatMoney(netTotalMoney);
 
-        // Register Pay QR & Buy Shuttle button events
-        document.querySelectorAll('.btn-pay-qr:not(.btn-buy-shuttle)').forEach(btn => {
+        // Register Pay QR, Buy Shuttle & Zalo Share button events
+        document.querySelectorAll('.btn-pay-qr:not(.btn-buy-shuttle):not(.btn-zalo-share)').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const name = e.target.getAttribute('data-pay-name');
                 openPaymentModal(name);
+            });
+        });
+
+        document.querySelectorAll('.btn-zalo-share').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const name = e.target.getAttribute('data-zalo-name');
+                shareZaloInvoice(name);
             });
         });
 
@@ -2230,6 +2281,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
         }
     });
+
+    if (elements.btnShareZaloModal) {
+        elements.btnShareZaloModal.addEventListener('click', () => {
+            if (currentPayPlayer) {
+                shareZaloInvoice(currentPayPlayer);
+            }
+        });
+    }
 
     elements.btnMarkPaid.addEventListener('click', () => {
         requireAdmin(() => {

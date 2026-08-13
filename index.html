@@ -11,6 +11,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Teko:wght@600;700&display=swap" rel="stylesheet">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Supabase JS Client & Config -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
     <style>
 /* ==========================================================================
    BADMINTON PENALTY & VIETQR PAYMENT TRACKER - STYLESHEET
@@ -964,8 +967,11 @@ body {
                 </div>
 
                 <button class="btn btn-dark btn-sm" id="btnBankSettings">
-                    <i data-lucide="qr-code"></i> Cài STK & Auto Check
+                    <i data-lucide="settings"></i> Cài STK & Supabase Cloud
                 </button>
+                <span id="headerCloudBadge" style="font-size: 0.75rem; padding: 4px 10px; border-radius: 12px; font-weight: 700; background: rgba(255, 183, 3, 0.15); color: var(--accent-gold); border: 1px solid rgba(255, 183, 3, 0.3); display: inline-flex; align-items: center; gap: 4px;" title="Trạng thái kết nối Cloud Supabase">
+                    🟡 Local
+                </span>
             </div>
 
             <div class="header-actions">
@@ -1114,11 +1120,11 @@ body {
             </div>
         </div>
 
-        <!-- Bank Setup Modal -->
+        <!-- Bank & Supabase Setup Modal -->
         <div class="modal-backdrop" id="bankModal">
             <div class="modal-content small-modal">
                 <div class="modal-header">
-                    <h3><i data-lucide="credit-card"></i> Thiết Lập STK MBBank & SePay</h3>
+                    <h3><i data-lucide="settings"></i> Cấu Hình STK MBBank & Supabase Cloud</h3>
                     <button class="btn-close" id="btnCloseBank"><i data-lucide="x"></i></button>
                 </div>
                 <div class="modal-body">
@@ -1153,13 +1159,83 @@ body {
                         <div class="form-group" style="margin-top: 12px; border-top: 1px dashed var(--border-color); padding-top: 10px;">
                             <label for="sepayToken">API Token SePay (Kiểm tra tự động):</label>
                             <input type="password" id="sepayToken" placeholder="Nhập SePay API Token" class="form-control">
-                            <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Copy Token tại SePay.vn để tự động kiểm tra số dư MBBank trực tiếp.</span>
+                            <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; display: block;">Copy Token tại SePay.vn để tự động kiểm tra số dư MBBank trực tiếp.</span>
+                        </div>
+
+                        <!-- Supabase Cloud Connection Settings -->
+                        <div class="form-group" style="margin-top: 12px; border-top: 1px dashed var(--border-color); padding-top: 10px;">
+                            <label style="font-weight: 800; color: var(--accent-gold); display: flex; align-items: center; gap: 6px;">
+                                ☁️ Kết Nối Database Cloud Supabase
+                            </label>
+                            <div style="margin-top: 8px;">
+                                <label for="supabaseUrl" style="font-size: 0.85rem;">Supabase URL:</label>
+                                <input type="url" id="supabaseUrl" placeholder="https://xyzcompany.supabase.co" class="form-control">
+                            </div>
+                            <div style="margin-top: 8px;">
+                                <label for="supabaseKey" style="font-size: 0.85rem;">Supabase Anon Key:</label>
+                                <input type="password" id="supabaseKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..." class="form-control">
+                            </div>
+                            <div style="margin-top: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                                <span id="supabaseStatusBadge" style="font-size: 0.75rem; padding: 4px 8px; border-radius: 12px; background: rgba(255,255,255,0.08); color: var(--text-muted);">
+                                    ⚪ Chưa cấu hình Supabase
+                                </span>
+                                <button type="button" id="btnShowSqlModal" class="btn btn-dark btn-sm" style="font-size: 0.75rem;">
+                                    📜 Lấy SQL Script Tạo Bảng
+                                </button>
+                            </div>
                         </div>
 
                         <div class="form-actions" style="margin-top: 16px;">
-                            <button type="submit" class="btn btn-success btn-block">Lưu Cấu Hình STK MBBank</button>
+                            <button type="submit" class="btn btn-success btn-block">Lưu Cấu Hình STK & Supabase</button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- SQL Setup Modal -->
+        <div class="modal-backdrop" id="sqlModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>📜 Script SQL Tạo Bảng Cho Supabase</h3>
+                    <button class="btn-close" id="btnCloseSqlModal"><i data-lucide="x"></i></button>
+                </div>
+                <div class="modal-body">
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">
+                        Vào trang <a href="https://supabase.com/dashboard" target="_blank" style="color: var(--accent-cyan);">Supabase Dashboard</a> -> Chọn dự án -> <strong>SQL Editor</strong> -> dán mã dưới đây và bấm <strong>RUN</strong>:
+                    </p>
+                    <pre style="background: #090d16; padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); font-size: 0.8rem; color: var(--primary-emerald); overflow-x: auto; max-height: 250px; user-select: text;" id="sqlScriptText">-- 1. Bảng Cấu hình ứng dụng
+CREATE TABLE IF NOT EXISTS app_settings (
+    key TEXT PRIMARY KEY,
+    shuttle_price INTEGER DEFAULT 26000,
+    bank_config JSONB DEFAULT '{"bankId":"MB","accountNo":"","accountName":"","sepayToken":""}'::jsonb,
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 2. Bảng Người chơi
+CREATE TABLE IF NOT EXISTS players (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT UNIQUE NOT NULL,
+    penalties NUMERIC DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 3. Bảng Lịch sử trận đấu
+CREATE TABLE IF NOT EXISTS match_history (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    mode TEXT NOT NULL,
+    winners TEXT NOT NULL,
+    losers TEXT NOT NULL,
+    penalty NUMERIC NOT NULL,
+    money NUMERIC NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Bật Realtime cho cả 3 bảng
+ALTER PUBLICATION supabase_realtime ADD TABLE app_settings, players, match_history;</pre>
+                    <div style="margin-top: 12px; display: flex; justify-content: flex-end;">
+                        <button id="btnCopySql" class="btn btn-success btn-sm">📋 Sao chép Script SQL</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1432,6 +1508,16 @@ document.addEventListener('DOMContentLoaded', () => {
         sepayToken: document.getElementById('sepayToken'),
         btnCloseBank: document.getElementById('btnCloseBank'),
 
+        // Supabase & SQL Modals
+        supabaseUrl: document.getElementById('supabaseUrl'),
+        supabaseKey: document.getElementById('supabaseKey'),
+        supabaseStatusBadge: document.getElementById('supabaseStatusBadge'),
+        headerCloudBadge: document.getElementById('headerCloudBadge'),
+        btnShowSqlModal: document.getElementById('btnShowSqlModal'),
+        sqlModal: document.getElementById('sqlModal'),
+        btnCloseSqlModal: document.getElementById('btnCloseSqlModal'),
+        btnCopySql: document.getElementById('btnCopySql'),
+
         // Payment Modal
         paymentModal: document.getElementById('paymentModal'),
         btnClosePayment: document.getElementById('btnClosePayment'),
@@ -1467,6 +1553,10 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.bankAccNo.value = bankConfig.accountNo || '';
     elements.bankAccName.value = bankConfig.accountName || '';
     elements.sepayToken.value = bankConfig.sepayToken || '';
+    if (window.SupabaseService) {
+        elements.supabaseUrl.value = SupabaseService.getUrl();
+        elements.supabaseKey.value = SupabaseService.getKey();
+    }
 
     // --- Admin Authentication Engine ---
     function requireAdmin(callback) {
@@ -1516,12 +1606,132 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3000);
     }
 
+    function updateSupabaseStatusUI() {
+        if (window.SupabaseService && SupabaseService.isConfigured()) {
+            elements.supabaseStatusBadge.textContent = '🟢 Đã kết nối Supabase Cloud';
+            elements.supabaseStatusBadge.style.color = 'var(--primary-emerald)';
+            elements.supabaseStatusBadge.style.background = 'rgba(0, 230, 118, 0.15)';
+
+            elements.headerCloudBadge.textContent = '🟢 Cloud Sync';
+            elements.headerCloudBadge.style.color = 'var(--primary-emerald)';
+            elements.headerCloudBadge.style.background = 'rgba(0, 230, 118, 0.15)';
+            elements.headerCloudBadge.style.borderColor = 'rgba(0, 230, 118, 0.3)';
+        } else {
+            elements.supabaseStatusBadge.textContent = '⚪ Chưa cấu hình Supabase';
+            elements.supabaseStatusBadge.style.color = 'var(--text-muted)';
+            elements.supabaseStatusBadge.style.background = 'rgba(255,255,255,0.08)';
+
+            elements.headerCloudBadge.textContent = '🟡 Local';
+            elements.headerCloudBadge.style.color = 'var(--accent-gold)';
+            elements.headerCloudBadge.style.background = 'rgba(255, 183, 3, 0.15)';
+            elements.headerCloudBadge.style.borderColor = 'rgba(255, 183, 3, 0.3)';
+        }
+    }
+
+    async function initSupabaseDataSync() {
+        updateSupabaseStatusUI();
+        if (!window.SupabaseService || !SupabaseService.isConfigured()) return;
+
+        showToast("☁️ Đang đồng bộ dữ liệu từ Supabase Cloud...");
+
+        // 1. Fetch App Settings
+        const appSettings = await SupabaseService.fetchAppSettings();
+        if (appSettings) {
+            if (appSettings.shuttle_price) {
+                shuttlePrice = appSettings.shuttle_price;
+                elements.inputShuttlePrice.value = shuttlePrice;
+            }
+            if (appSettings.bank_config) {
+                bankConfig = appSettings.bank_config;
+                elements.bankSelect.value = bankConfig.bankId || 'MB';
+                elements.bankAccNo.value = bankConfig.accountNo || '';
+                elements.bankAccName.value = bankConfig.accountName || '';
+                elements.sepayToken.value = bankConfig.sepayToken || '';
+            }
+        }
+
+        // 2. Fetch Players
+        const playersData = await SupabaseService.fetchPlayers();
+        if (playersData && playersData.length > 0) {
+            registeredPlayers = playersData.map(p => p.name);
+            playerPenalties = {};
+            playersData.forEach(p => {
+                playerPenalties[p.name] = parseFloat(p.penalties || 0);
+            });
+        }
+
+        // 3. Fetch History
+        const historyData = await SupabaseService.fetchMatchHistory();
+        if (historyData) {
+            historyLog = historyData.map(h => ({
+                time: new Date(h.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+                winners: h.winners,
+                losers: h.losers,
+                penalty: parseFloat(h.penalty),
+                money: parseFloat(h.money),
+                mode: h.mode
+            }));
+        }
+
+        // Save local backup
+        localStorage.setItem('badminton_shuttle_price', shuttlePrice.toString());
+        localStorage.setItem('badminton_bank_config', JSON.stringify(bankConfig));
+        localStorage.setItem('badminton_players', JSON.stringify(registeredPlayers));
+        localStorage.setItem('badminton_penalties', JSON.stringify(playerPenalties));
+        localStorage.setItem('badminton_penalty_history', JSON.stringify(historyLog));
+
+        updateSelectionUI();
+        renderLeaderboard();
+
+        // 4. Subscribe Realtime
+        SupabaseService.subscribeRealtime(async (tableName) => {
+            if (tableName === 'players') {
+                const freshPlayers = await SupabaseService.fetchPlayers();
+                if (freshPlayers) {
+                    registeredPlayers = freshPlayers.map(p => p.name);
+                    playerPenalties = {};
+                    freshPlayers.forEach(p => { playerPenalties[p.name] = parseFloat(p.penalties || 0); });
+                    renderLeaderboard();
+                    updateSelectionUI();
+                }
+            } else if (tableName === 'match_history') {
+                const freshHistory = await SupabaseService.fetchMatchHistory();
+                if (freshHistory) {
+                    historyLog = freshHistory.map(h => ({
+                        time: new Date(h.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+                        winners: h.winners,
+                        losers: h.losers,
+                        penalty: parseFloat(h.penalty),
+                        money: parseFloat(h.money),
+                        mode: h.mode
+                    }));
+                    renderHistoryLog();
+                }
+            } else if (tableName === 'app_settings') {
+                const freshSettings = await SupabaseService.fetchAppSettings();
+                if (freshSettings) {
+                    if (freshSettings.shuttle_price) shuttlePrice = freshSettings.shuttle_price;
+                    if (freshSettings.bank_config) bankConfig = freshSettings.bank_config;
+                    elements.inputShuttlePrice.value = shuttlePrice;
+                    renderLeaderboard();
+                }
+            }
+        });
+    }
+
     function saveState() {
         localStorage.setItem('badminton_shuttle_price', shuttlePrice.toString());
         localStorage.setItem('badminton_bank_config', JSON.stringify(bankConfig));
         localStorage.setItem('badminton_players', JSON.stringify(registeredPlayers));
         localStorage.setItem('badminton_penalties', JSON.stringify(playerPenalties));
         localStorage.setItem('badminton_penalty_history', JSON.stringify(historyLog));
+
+        if (window.SupabaseService && SupabaseService.isConfigured()) {
+            SupabaseService.saveAppSettings(shuttlePrice, bankConfig);
+            registeredPlayers.forEach(name => {
+                SupabaseService.savePlayer(name, playerPenalties[name] || 0);
+            });
+        }
     }
 
     function getNeededCount() {
@@ -2043,9 +2253,31 @@ document.addEventListener('DOMContentLoaded', () => {
         bankConfig.accountName = elements.bankAccName.value.trim().toUpperCase();
         bankConfig.sepayToken = elements.sepayToken.value.trim();
 
+        const sbUrl = elements.supabaseUrl.value.trim();
+        const sbKey = elements.supabaseKey.value.trim();
+        if (window.SupabaseService) {
+            SupabaseService.saveCredentials(sbUrl, sbKey);
+        }
+
         saveState();
         elements.bankModal.classList.remove('active');
-        showToast("✅ Đã lưu cấu hình tài khoản MBBank & SePay Token!");
+        showToast("✅ Đã lưu cấu hình tài khoản & Supabase!");
+        initSupabaseDataSync();
+    });
+
+    // SQL Script Modal Handlers
+    elements.btnShowSqlModal.addEventListener('click', () => {
+        elements.sqlModal.classList.add('active');
+    });
+
+    elements.btnCloseSqlModal.addEventListener('click', () => {
+        elements.sqlModal.classList.remove('active');
+    });
+
+    elements.btnCopySql.addEventListener('click', () => {
+        const text = document.getElementById('sqlScriptText').textContent;
+        navigator.clipboard.writeText(text);
+        showToast("📋 Đã sao chép Script SQL vào Clipboard!");
     });
 
     // Payment modal copy & mark paid events
@@ -2139,6 +2371,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 clearSelections();
                 stopAutoCheckPolling();
                 saveState();
+                if (window.SupabaseService && SupabaseService.isConfigured()) {
+                    SupabaseService.resetAllData();
+                }
                 renderLeaderboard();
                 showToast("Đã đặt lại toàn bộ!");
             }
@@ -2156,6 +2391,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initRealtimeSePayListener();
     updateSelectionUI();
     updateAdminUI();
+    initSupabaseDataSync();
 });
     </script>
 </body>

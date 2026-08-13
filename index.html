@@ -1684,9 +1684,26 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.penaltyList.appendChild(card);
         });
 
-        const grandTotalMoney = grandTotalShuttles * shuttlePrice;
-        elements.totalShuttlesBadge.textContent = `${grandTotalShuttles} quả`;
-        elements.totalMoneyBadge.textContent = `${formatMoney(grandTotalMoney)}`;
+        let playersTotalShuttles = 0;
+        sortedPlayers.forEach((name) => {
+            playersTotalShuttles += (playerPenalties[name] || 0);
+        });
+
+        // Calculate total shuttles & money spent by Admin Fund purchasing shuttles
+        let fundBoughtShuttles = 0;
+        let fundBoughtMoney = 0;
+        historyLog.forEach(log => {
+            if (log.mode === 'buy_shuttle_fund') {
+                fundBoughtShuttles += Math.abs(log.penalty || 0);
+                fundBoughtMoney += Math.abs(log.money || 0);
+            }
+        });
+
+        const netTotalShuttles = playersTotalShuttles - fundBoughtShuttles;
+        const netTotalMoney = (playersTotalShuttles * shuttlePrice) - fundBoughtMoney;
+
+        elements.totalShuttlesBadge.textContent = `${netTotalShuttles} quả`;
+        elements.totalMoneyBadge.textContent = netTotalMoney < 0 ? `-${formatMoney(Math.abs(netTotalMoney))}` : formatMoney(netTotalMoney);
 
         // Register Pay QR & Buy Shuttle button events
         document.querySelectorAll('.btn-pay-qr:not(.btn-buy-shuttle)').forEach(btn => {

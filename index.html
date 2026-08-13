@@ -1324,12 +1324,7 @@ body {
                             <input type="text" id="bankAccName" placeholder="VD: NGUYEN VAN A" class="form-control" style="text-transform: uppercase;">
                         </div>
 
-                        <!-- Optional SePay Auto API Token -->
-                        <div class="form-group" style="margin-top: 12px; border-top: 1px dashed var(--border-color); padding-top: 10px;">
-                            <label for="sepayToken">API Token SePay (Kiểm tra tự động):</label>
-                            <input type="password" id="sepayToken" placeholder="Nhập SePay API Token" class="form-control">
-                            <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; display: block;">Copy Token tại SePay.vn để tự động kiểm tra số dư MBBank trực tiếp.</span>
-                        </div>
+
 
                         <!-- Supabase Cloud Connection Settings -->
                         <div class="form-group" style="margin-top: 12px; border-top: 1px dashed var(--border-color); padding-top: 10px;">
@@ -1422,10 +1417,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE app_settings, players, match_histo
                     <button class="btn-close" id="btnClosePayment"><i data-lucide="x"></i></button>
                 </div>
                 <div class="modal-body payment-body">
-                    <!-- Auto Check Live Status Badge -->
-                    <div class="auto-check-banner" id="autoCheckBanner">
-                        <span class="spinner-icon">🔄</span> <span id="autoCheckText">Đang tự động kiểm tra tiền về MBBank...</span>
-                    </div>
+
 
                     <div class="qr-code-wrapper">
                         <img id="qrCodeImg" src="" alt="Mã VietQR MBBank Thanh Toán" class="qr-image">
@@ -1679,7 +1671,6 @@ document.addEventListener('DOMContentLoaded', () => {
         bankSelect: document.getElementById('bankSelect'),
         bankAccNo: document.getElementById('bankAccNo'),
         bankAccName: document.getElementById('bankAccName'),
-        sepayToken: document.getElementById('sepayToken'),
         btnCloseBank: document.getElementById('btnCloseBank'),
 
         // Supabase & SQL Modals
@@ -1695,8 +1686,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Payment Modal
         paymentModal: document.getElementById('paymentModal'),
         btnClosePayment: document.getElementById('btnClosePayment'),
-        autoCheckBanner: document.getElementById('autoCheckBanner'),
-        autoCheckText: document.getElementById('autoCheckText'),
         qrCodeImg: document.getElementById('qrCodeImg'),
         payPlayerName: document.getElementById('payPlayerName'),
         payAmount: document.getElementById('payAmount'),
@@ -1726,7 +1715,6 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.bankSelect.value = bankConfig.bankId || 'MB';
     elements.bankAccNo.value = bankConfig.accountNo || '';
     elements.bankAccName.value = bankConfig.accountName || '';
-    elements.sepayToken.value = bankConfig.sepayToken || '';
     if (window.SupabaseService) {
         elements.supabaseUrl.value = SupabaseService.getUrl();
         elements.supabaseKey.value = SupabaseService.getKey();
@@ -1912,36 +1900,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return currentMode === '2v2' ? 2 : 1;
     }
 
-    // --- Server-Sent Events (Real-time SePay Webhook Listener) ---
-    function initRealtimeSePayListener() {
-        if (!!window.EventSource) {
-            const source = new EventSource('/api/events');
 
-            source.addEventListener('message', (e) => {
-                try {
-                    const data = JSON.parse(e.data);
-                    if (data.type === 'SEPAY_TRANSACTION') {
-                        console.log("⚡ Instant SePay Webhook Event Received:", data);
-                        handleIncomingTransaction(data.amount, data.content);
-                    }
-                } catch (err) {
-                    console.error("SSE parse error:", err);
-                }
-            });
-        }
-    }
-
-    function handleIncomingTransaction(amount, content) {
-        if (!content) return;
-        const normalizedContent = content.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-
-        registeredPlayers.forEach(playerName => {
-            const normalizedPlayer = playerName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-            if (normalizedContent.includes(normalizedPlayer)) {
-                markPlayerAsPaid(playerName, true, amount);
-            }
-        });
-    }
 
     // --- Selection UI ---
     function updateSelectionUI() {
@@ -2114,69 +2073,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         elements.paymentModal.classList.add('active');
-
-        startAutoCheckPolling(playerName, amount, memo);
     }
 
-    function startAutoCheckPolling(playerName, expectedAmount, memoText) {
-        stopAutoCheckPolling();
-
-        if (bankConfig.sepayToken) {
-            elements.autoCheckText.textContent = `Đang tự động quét tiền về MBBank từ SePay API...`;
-        } else {
-            elements.autoCheckText.textContent = `Đang chờ phát tín hiệu chuyển khoản MBBank...`;
-        }
-
-        autoCheckInterval = setInterval(() => {
-            if (!currentPayPlayer || currentPayPlayer !== playerName) return;
-
-            if (bankConfig.sepayToken && bankConfig.accountNo) {
-                const apiUrl = `https://my.sepay.vn/userapi/transactions/list?account_number=${bankConfig.accountNo}`;
-                fetch(apiUrl, {
-                    headers: {
-                        'Authorization': `Bearer ${bankConfig.sepayToken}`,
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data && data.transactions && Array.isArray(data.transactions)) {
-                        const match = data.transactions.find(t => {
-                            const matchAmount = parseInt(t.amount_in) >= expectedAmount;
-                            const matchMemo = t.transaction_content && t.transaction_content.toLowerCase().includes(playerName.toLowerCase());
-                            return matchAmount && matchMemo;
-                        });
-
-                        if (match) {
-                            markPlayerAsPaid(playerName, true, match.amount_in);
-                        }
-                    }
-                })
-                .catch(err => console.error("SePay MBBank API Error:", err));
-            }
-        }, 4000);
-    }
-
-    function stopAutoCheckPolling() {
-        if (autoCheckInterval) {
-            clearInterval(autoCheckInterval);
-            autoCheckInterval = null;
-        }
-    }
-
-    function markPlayerAsPaid(playerName, isAuto = false, amountReceived = 0) {
+    function markPlayerAsPaid(playerName) {
         playerPenalties[playerName] = 0;
         saveState();
         renderLeaderboard();
-        stopAutoCheckPolling();
         elements.paymentModal.classList.remove('active');
         soundEngine.playSuccessSound();
-
-        if (isAuto) {
-            showToast(`🎉 SEPAY XÁC NHẬN: ${playerName} đã chuyển MBBank ${formatMoney(amountReceived || 0)} thành công!`);
-        } else {
-            showToast(`🎉 XÁC NHẬN: ${playerName} đã thanh toán hết nợ!`);
-        }
+        showToast(`🎉 XÁC NHẬN: ${playerName} đã thanh toán hết nợ!`);
     }
 
     // --- Render Leaderboard ---
@@ -2461,7 +2366,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Payment modal copy & mark paid events
     elements.btnClosePayment.addEventListener('click', () => {
-        stopAutoCheckPolling();
         elements.paymentModal.classList.remove('active');
     });
 
@@ -2548,7 +2452,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 playerPenalties = {};
                 historyLog = [];
                 clearSelections();
-                stopAutoCheckPolling();
                 saveState();
                 if (window.SupabaseService && SupabaseService.isConfigured()) {
                     SupabaseService.resetAllData();
@@ -2567,7 +2470,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Init
-    initRealtimeSePayListener();
     updateSelectionUI();
     updateAdminUI();
     initSupabaseDataSync();

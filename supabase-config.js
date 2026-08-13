@@ -6,13 +6,16 @@
     let supabaseClient = null;
     let realtimeChannel = null;
 
+    const DEFAULT_SUPABASE_URL = 'https://ecsoplptkzbkcdmseguc.supabase.co';
+    const DEFAULT_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjc29wbHB0a3pia2NkbXNlZ3VjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2NDE2NTEsImV4cCI6MjEwMjIxNzY1MX0.v_OkNeWS8tRcp-CyaOixRKeHCOrRuG0MjN11POyIw5A';
+
     const SupabaseService = {
         getUrl() {
-            return localStorage.getItem('badminton_supabase_url') || '';
+            return localStorage.getItem('badminton_supabase_url') || DEFAULT_SUPABASE_URL;
         },
 
         getKey() {
-            return localStorage.getItem('badminton_supabase_key') || '';
+            return localStorage.getItem('badminton_supabase_key') || DEFAULT_SUPABASE_KEY;
         },
 
         saveCredentials(url, key) {

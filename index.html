@@ -1,0 +1,2162 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghi Điểm & Đền Cầu Lông - Badminton Penalty Tracker</title>
+    <meta name="description" content="Ứng dụng ghi nhận lượt thua, tính tiền quả cầu và tự động kiểm tra biến động số dư chuyển khoản MBBank.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Teko:wght@600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+/* ==========================================================================
+   BADMINTON PENALTY & VIETQR PAYMENT TRACKER - STYLESHEET
+   ========================================================================== */
+
+:root {
+    --bg-dark: #0a0e17;
+    --bg-card: rgba(22, 30, 46, 0.85);
+    --border-color: rgba(255, 255, 255, 0.1);
+
+    --primary-emerald: #00e676;
+    --primary-emerald-glow: rgba(0, 230, 118, 0.35);
+    --accent-gold: #ffb703;
+    --accent-cyan: #00d2ff;
+    --danger-red: #ff3b30;
+    --danger-glow: rgba(255, 59, 48, 0.4);
+
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+
+    --font-main: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-digits: 'Teko', sans-serif;
+
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+body {
+    font-family: var(--font-main);
+    background-color: var(--bg-dark);
+    background-image: 
+        radial-gradient(circle at 50% 0%, rgba(0, 210, 255, 0.08) 0%, transparent 70%),
+        radial-gradient(circle at 10% 90%, rgba(255, 59, 48, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 90% 90%, rgba(255, 183, 3, 0.08) 0%, transparent 50%);
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.app-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Header */
+.app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
+    padding: 14px 20px;
+    border-radius: 18px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.logo-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-icon {
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.logo-text h1 {
+    font-size: 1.3rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    line-height: 1.1;
+}
+
+.logo-text h1 span {
+    color: var(--danger-red);
+}
+
+.logo-text .sub-title {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.header-settings-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Price Config Box */
+.price-config-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 6px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.price-config-box label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.price-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.price-control {
+    width: 90px;
+    padding: 6px 10px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--accent-gold);
+    font-weight: 800;
+    font-family: var(--font-main);
+    font-size: 0.95rem;
+    outline: none;
+    text-align: right;
+}
+
+.price-control:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.price-control:focus {
+    border-color: var(--accent-gold);
+    box-shadow: 0 0 8px rgba(255, 183, 3, 0.3);
+}
+
+.currency-unit {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: var(--accent-gold);
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Admin Button Specifics */
+.btn-warning {
+    background: rgba(255, 183, 3, 0.15);
+    color: var(--accent-gold);
+    border: 1px solid rgba(255, 183, 3, 0.4);
+}
+
+.btn-warning:hover {
+    background: var(--accent-gold);
+    color: #000;
+}
+
+.btn-admin-active {
+    background: linear-gradient(135deg, #ffb703, #ff5722) !important;
+    color: #000 !important;
+    font-weight: 900 !important;
+    border: none !important;
+    box-shadow: 0 0 15px rgba(255, 183, 3, 0.5) !important;
+}
+
+/* Mode Selector Bar */
+.mode-selector-bar {
+    display: flex;
+    gap: 12px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 6px;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+}
+
+.mode-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    font-family: var(--font-main);
+    font-size: 0.9rem;
+    font-weight: 800;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: var(--transition-normal);
+}
+
+.mode-btn:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.mode-btn.active {
+    background: linear-gradient(135deg, rgba(0, 230, 118, 0.2), rgba(0, 210, 255, 0.2));
+    border-color: var(--primary-emerald);
+    color: var(--primary-emerald);
+    box-shadow: 0 4px 15px var(--primary-emerald-glow);
+}
+
+/* Main Grid */
+.main-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.panel-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    height: 100%;
+}
+
+/* Step Guide Box */
+.step-guide-box {
+    border-radius: 18px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-align: center;
+    transition: var(--transition-normal);
+}
+
+.step-guide-box.step-winner {
+    background: linear-gradient(135deg, rgba(0, 230, 118, 0.15), rgba(0, 210, 255, 0.1));
+    border: 2px solid var(--primary-emerald);
+    box-shadow: 0 0 20px var(--primary-emerald-glow);
+}
+
+.step-guide-box.step-loser {
+    background: linear-gradient(135deg, rgba(255, 59, 48, 0.2), rgba(255, 183, 3, 0.1));
+    border: 2px solid var(--danger-red);
+    box-shadow: 0 0 20px var(--danger-glow);
+}
+
+.step-badge {
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 3px 12px;
+    border-radius: 12px;
+    color: #fff;
+}
+
+.step-title {
+    font-size: 1.4rem;
+    font-weight: 900;
+    line-height: 1.2;
+}
+
+.step-guide-box.step-winner .step-title {
+    color: var(--primary-emerald);
+}
+
+.step-guide-box.step-loser .step-title {
+    color: var(--danger-red);
+}
+
+.step-sub {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* Preview Box */
+.selection-preview-grid {
+    display: flex;
+    gap: 10px;
+}
+
+.preview-box {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px dashed var(--border-color);
+    border-radius: 14px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.winner-preview {
+    border-color: rgba(0, 230, 118, 0.4);
+}
+
+.loser-preview {
+    border-color: rgba(255, 59, 48, 0.4);
+}
+
+.preview-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+}
+
+.preview-names {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--text-main);
+    min-height: 24px;
+}
+
+.winner-preview .preview-names {
+    color: var(--primary-emerald);
+}
+
+.loser-preview .preview-names {
+    color: var(--danger-red);
+}
+
+.preview-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Player Tiles Section */
+.player-selection-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.section-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--text-muted);
+}
+
+.btn-text {
+    background: none;
+    border: none;
+    color: var(--accent-cyan);
+    font-weight: 800;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.btn-text:hover {
+    text-decoration: underline;
+}
+
+.player-tiles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+}
+
+.player-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid var(--border-color);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: var(--transition-normal);
+    gap: 6px;
+    position: relative;
+}
+
+.player-tile:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px);
+}
+
+.player-tile:active {
+    transform: scale(0.95);
+}
+
+.player-tile .tile-name {
+    font-size: 1.15rem;
+    font-weight: 800;
+    text-align: center;
+}
+
+.player-tile.selected-winner {
+    background: linear-gradient(135deg, rgba(0, 230, 118, 0.25), rgba(0, 210, 255, 0.25));
+    border-color: var(--primary-emerald);
+    color: var(--primary-emerald);
+    box-shadow: 0 0 15px var(--primary-emerald-glow);
+}
+
+.player-tile.selected-loser {
+    background: linear-gradient(135deg, rgba(255, 59, 48, 0.3), rgba(255, 183, 3, 0.2));
+    border-color: var(--danger-red);
+    color: var(--danger-red);
+    box-shadow: 0 0 15px var(--danger-glow);
+}
+
+.player-tile .status-icon-badge {
+    font-size: 0.8rem;
+    font-weight: 900;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.player-tile.selected-winner .status-icon-badge {
+    background: var(--primary-emerald);
+    color: #000;
+}
+
+.player-tile.selected-loser .status-icon-badge {
+    background: var(--danger-red);
+    color: #fff;
+}
+
+/* Leaderboard Elements */
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 14px;
+}
+
+.card-header h2 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--accent-gold);
+}
+
+.total-summary-badges {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.total-shuttles-badge {
+    background: rgba(255, 183, 3, 0.15);
+    border: 1px solid var(--accent-gold);
+    color: var(--accent-gold);
+    font-weight: 800;
+    font-size: 0.85rem;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+.total-money-badge {
+    background: rgba(255, 59, 48, 0.2);
+    border: 1px solid var(--danger-red);
+    color: var(--danger-red);
+    font-weight: 900;
+    font-size: 0.85rem;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+.penalty-cards-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.penalty-card-item {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: var(--transition-normal);
+}
+
+.penalty-card-item.leader {
+    border-color: var(--danger-red);
+    background: linear-gradient(135deg, rgba(255, 59, 48, 0.12), rgba(0, 0, 0, 0.3));
+}
+
+.player-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.player-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-gold), #ff5722);
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 1.1rem;
+}
+
+.player-name-text {
+    font-size: 1.1rem;
+    font-weight: 800;
+}
+
+.shuttle-count-box {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.shuttle-count-val {
+    font-family: var(--font-digits);
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: var(--danger-red);
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.player-money-val {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--accent-gold);
+}
+
+.penalty-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-pay-qr {
+    background: linear-gradient(135deg, rgba(0, 210, 255, 0.2), rgba(0, 230, 118, 0.2));
+    border: 1px solid var(--accent-cyan);
+    color: var(--accent-cyan);
+    font-weight: 800;
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: var(--transition-fast);
+}
+
+.btn-pay-qr:hover {
+    background: var(--accent-cyan);
+    color: #000;
+    box-shadow: 0 0 12px rgba(0, 210, 255, 0.4);
+}
+
+.btn-group-counter {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-counter {
+    padding: 4px 8px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-main);
+    font-weight: 800;
+    font-size: 0.8rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-fast);
+}
+
+.btn-counter:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Auto-Check Banner */
+.auto-check-banner {
+    width: 100%;
+    background: linear-gradient(135deg, rgba(0, 210, 255, 0.15), rgba(0, 230, 118, 0.15));
+    border: 1px solid var(--accent-cyan);
+    border-radius: 12px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--accent-cyan);
+}
+
+.spinner-icon {
+    display: inline-block;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Payment Modal Specifics */
+.payment-modal-content {
+    max-width: 440px;
+}
+
+.payment-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.qr-code-wrapper {
+    background: #fff;
+    padding: 12px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qr-image {
+    width: 230px;
+    height: 230px;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.payment-details-box {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.pay-detail-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.9rem;
+}
+
+.pay-label {
+    color: var(--text-muted);
+}
+
+.pay-val {
+    font-weight: 800;
+    color: var(--text-main);
+}
+
+.pay-val-highlight {
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: var(--danger-red);
+}
+
+.pay-val-copy {
+    font-weight: 700;
+    color: var(--accent-gold);
+}
+
+.btn-copy {
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 2px 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-main);
+    cursor: pointer;
+}
+
+.btn-copy:hover {
+    background: var(--primary-emerald);
+    color: #000;
+}
+
+.payment-actions {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* General Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 14px;
+    font-family: var(--font-main);
+    font-size: 0.85rem;
+    font-weight: 700;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    text-decoration: none;
+}
+
+.btn-dark {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+}
+
+.btn-dark:hover {
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.btn-danger {
+    background: rgba(255, 59, 48, 0.15);
+    color: var(--danger-red);
+    border: 1px solid rgba(255, 59, 48, 0.3);
+}
+
+.btn-danger:hover {
+    background: var(--danger-red);
+    color: #fff;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+}
+
+.icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+/* Modals */
+.modal-backdrop {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(5, 8, 14, 0.85);
+    backdrop-filter: blur(10px);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.modal-backdrop.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-content {
+    background: #141c2b;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-content.small-modal {
+    max-width: 400px;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-body {
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.history-log-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.history-log-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 10px;
+    font-size: 0.9rem;
+    border-left: 3px solid var(--danger-red);
+}
+
+.empty-msg {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px 14px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    color: var(--text-main);
+    font-family: var(--font-main);
+    font-size: 0.95rem;
+    outline: none;
+}
+
+.btn-block {
+    width: 100%;
+}
+
+.btn-lg {
+    padding: 12px 20px;
+    font-size: 1rem;
+    border-radius: 12px;
+}
+
+/* Toast */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+}
+
+.toast {
+    background: #1e293b;
+    border: 1px solid var(--primary-emerald);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-weight: 700;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    animation: toastIn 0.3s ease;
+}
+
+@keyframes toastIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+
+    .header-settings-group {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-group">
+                <div class="logo-icon">🏸</div>
+                <div class="logo-text">
+                    <h1>CẦU LÔNG <span>ĐỀN CẦU</span></h1>
+                    <span class="sub-title">Chọn Thắng -> Thua & MBBank Auto Check</span>
+                </div>
+            </div>
+
+            <!-- Price Config & Bank Config Buttons -->
+            <div class="header-settings-group">
+                <div class="price-config-box">
+                    <label for="inputShuttlePrice">Giá 1 quả:</label>
+                    <div class="price-input-wrapper">
+                        <input type="number" id="inputShuttlePrice" value="26000" step="1000" min="0" class="price-control">
+                        <span class="currency-unit">đ</span>
+                    </div>
+                </div>
+
+                <button class="btn btn-dark btn-sm" id="btnBankSettings">
+                    <i data-lucide="qr-code"></i> Cài STK & Auto Check
+                </button>
+            </div>
+
+            <div class="header-actions">
+                <button class="btn btn-warning btn-sm" id="btnAdminToggle">
+                    <i data-lucide="shield" id="adminIcon"></i> <span id="adminBtnText">🔑 Quyền Admin</span>
+                </button>
+                <button class="btn btn-dark btn-sm" id="btnChangePin" style="display: none;" title="Đổi PIN Admin">
+                    <i data-lucide="key"></i> Đổi PIN
+                </button>
+                <button class="icon-btn" id="btnAudioToggle" title="Bật/Tắt âm thanh">
+                    <i data-lucide="volume-2" id="audioIcon"></i>
+                </button>
+                <button class="btn btn-dark btn-sm" id="btnShowHistory">
+                    <i data-lucide="history"></i> Lịch sử
+                </button>
+                <button class="btn btn-danger btn-sm" id="btnResetAll">
+                    <i data-lucide="rotate-ccw"></i> Đặt lại
+                </button>
+            </div>
+        </header>
+
+        <!-- Mode Selector -->
+        <nav class="mode-selector-bar">
+            <button class="mode-btn active" id="btnMode2v2" data-mode="2v2">
+                <i data-lucide="users"></i> ĐÁNH ĐÔI 2v2 (Chọn 2 Thắng ➔ 2 Thua)
+            </button>
+            <button class="mode-btn" id="btnMode1v1" data-mode="1v1">
+                <i data-lucide="user"></i> ĐÁNH ĐƠN 1v1 (Chọn 1 Thắng ➔ 1 Thua)
+            </button>
+        </nav>
+
+        <!-- Main Content Grid -->
+        <main class="main-content">
+            <!-- Left Panel: Interactive Tap Match Recorder -->
+            <section class="recorder-panel">
+                <div class="panel-card">
+                    <!-- Status Header / Step Guidance -->
+                    <div class="step-guide-box step-winner" id="stepGuideBox">
+                        <div class="step-badge" id="stepBadge">LẦN BẤM 1</div>
+                        <div class="step-title" id="stepTitle">🏆 CHỌN NGƯỜI THẮNG</div>
+                        <div class="step-sub" id="stepSub">Bấm chọn 2 người chiến thắng</div>
+                    </div>
+
+                    <!-- Selected Teams Preview Box -->
+                    <div class="selection-preview-grid">
+                        <div class="preview-box winner-preview">
+                            <span class="preview-label">🏆 BÊN THẮNG:</span>
+                            <div class="preview-names" id="winnerPreviewNames">Chưa chọn</div>
+                        </div>
+
+                        <div class="preview-box loser-preview">
+                            <span class="preview-label">❌ BÊN THUA (+0.5 quả / 13k):</span>
+                            <div class="preview-names" id="loserPreviewNames">Chưa chọn</div>
+                        </div>
+                    </div>
+
+                    <!-- Cancel / Reset Selection Buttons -->
+                    <div class="preview-actions">
+                        <button class="btn btn-dark btn-sm" id="btnClearSelection">
+                            <i data-lucide="rotate-ccw"></i> Chọn lại
+                        </button>
+                    </div>
+
+                    <!-- Player Grid Tiles to Click -->
+                    <div class="player-selection-section">
+                        <div class="section-title-row">
+                            <span>DANH SÁCH Ô NGƯỜI CHƠI (BẤM VÀO TÊN)</span>
+                            <button class="btn-text" id="btnAddPlayerBtn">+ Thêm người chơi</button>
+                        </div>
+
+                        <div class="player-tiles-grid" id="playerTilesGrid">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Penalty & Money Leaderboard -->
+            <section class="leaderboard-panel">
+                <div class="panel-card">
+                    <div class="card-header">
+                        <h2><i data-lucide="flame"></i> BẢNG ĐỀN CẦU & THÀNH TIỀN</h2>
+                        <div class="total-summary-badges">
+                            <span class="total-shuttles-badge" id="totalShuttlesBadge">0 quả</span>
+                            <span class="total-money-badge" id="totalMoneyBadge">0đ</span>
+                        </div>
+                    </div>
+
+                    <!-- Player Penalty List -->
+                    <div class="penalty-cards-list" id="penaltyList">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Admin PIN Modal -->
+        <div class="modal-backdrop" id="adminPinModal">
+            <div class="modal-content small-modal">
+                <div class="modal-header">
+                    <h3><i data-lucide="lock"></i> Nhập Mã PIN Admin</h3>
+                    <button class="btn-close" id="btnCloseAdminPin"><i data-lucide="x"></i></button>
+                </div>
+                <div class="modal-body">
+                    <form id="adminPinForm">
+                        <div class="form-group">
+                            <label for="adminPinInput">Mã PIN Admin (Mặc định: 1234):</label>
+                            <input type="password" id="adminPinInput" maxlength="10" placeholder="****" required class="form-control" style="font-size: 1.5rem; letter-spacing: 4px; text-align: center;">
+                            <span id="pinErrorMsg" style="color: var(--danger-red); font-size: 0.8rem; display: none; margin-top: 4px; text-align: center;">⚠️ Mã PIN không đúng!</span>
+                        </div>
+                        <div class="form-actions" style="margin-top: 16px;">
+                            <button type="submit" class="btn btn-success btn-block btn-lg">Xác Nhận Đăng Nhập</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Change Admin PIN Modal -->
+        <div class="modal-backdrop" id="changePinModal">
+            <div class="modal-content small-modal">
+                <div class="modal-header">
+                    <h3><i data-lucide="key"></i> Đổi Mã PIN Admin</h3>
+                    <button class="btn-close" id="btnCloseChangePin"><i data-lucide="x"></i></button>
+                </div>
+                <div class="modal-body">
+                    <form id="changePinForm">
+                        <div class="form-group">
+                            <label for="oldPinInput">Mã PIN hiện tại:</label>
+                            <input type="password" id="oldPinInput" placeholder="****" required class="form-control">
+                        </div>
+                        <div class="form-group" style="margin-top: 10px;">
+                            <label for="newPinInput">Mã PIN mới:</label>
+                            <input type="password" id="newPinInput" placeholder="Mã PIN mới" required class="form-control">
+                        </div>
+                        <div class="form-group" style="margin-top: 10px;">
+                            <label for="confirmPinInput">Xác nhận Mã PIN mới:</label>
+                            <input type="password" id="confirmPinInput" placeholder="Nhập lại mã PIN mới" required class="form-control">
+                            <span id="changePinError" style="color: var(--danger-red); font-size: 0.8rem; display: none; margin-top: 4px;"></span>
+                        </div>
+                        <div class="form-actions" style="margin-top: 16px;">
+                            <button type="submit" class="btn btn-success btn-block">Lưu Mã PIN Mới</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bank Setup Modal -->
+        <div class="modal-backdrop" id="bankModal">
+            <div class="modal-content small-modal">
+                <div class="modal-header">
+                    <h3><i data-lucide="credit-card"></i> Thiết Lập STK MBBank & SePay</h3>
+                    <button class="btn-close" id="btnCloseBank"><i data-lucide="x"></i></button>
+                </div>
+                <div class="modal-body">
+                    <form id="bankForm">
+                        <div class="form-group">
+                            <label for="bankSelect">Ngân hàng nhận tiền:</label>
+                            <select id="bankSelect" class="form-control">
+                                <option value="MB" selected>MBBank (Ngân hàng Quân Đội)</option>
+                                <option value="TCB">Techcombank</option>
+                                <option value="VCB">Vietcombank</option>
+                                <option value="VPB">VPBank</option>
+                                <option value="ACB">ACB</option>
+                                <option value="BIDV">BIDV</option>
+                                <option value="VTB">VietinBank</option>
+                                <option value="TPB">TPBank</option>
+                                <option value="STB">Sacombank</option>
+                                <option value="VIB">VIB</option>
+                                <option value="MSB">MSB</option>
+                                <option value="SHB">SHB</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-top: 10px;">
+                            <label for="bankAccNo">Số Tài Khoản MBBank (STK):</label>
+                            <input type="text" id="bankAccNo" placeholder="Nhập số tài khoản MBBank của bạn..." required class="form-control">
+                        </div>
+                        <div class="form-group" style="margin-top: 10px;">
+                            <label for="bankAccName">Tên chủ tài khoản (Viết không dấu):</label>
+                            <input type="text" id="bankAccName" placeholder="VD: NGUYEN VAN A" class="form-control" style="text-transform: uppercase;">
+                        </div>
+
+                        <!-- Optional SePay Auto API Token -->
+                        <div class="form-group" style="margin-top: 12px; border-top: 1px dashed var(--border-color); padding-top: 10px;">
+                            <label for="sepayToken">API Token SePay (Kiểm tra tự động):</label>
+                            <input type="password" id="sepayToken" placeholder="Nhập SePay API Token" class="form-control">
+                            <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Copy Token tại SePay.vn để tự động kiểm tra số dư MBBank trực tiếp.</span>
+                        </div>
+
+                        <div class="form-actions" style="margin-top: 16px;">
+                            <button type="submit" class="btn btn-success btn-block">Lưu Cấu Hình STK MBBank</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment QR Modal -->
+        <div class="modal-backdrop" id="paymentModal">
+            <div class="modal-content payment-modal-content">
+                <div class="modal-header">
+                    <h3><i data-lucide="qr-code"></i> Mã VietQR MBBank Chuyển Khoản</h3>
+                    <button class="btn-close" id="btnClosePayment"><i data-lucide="x"></i></button>
+                </div>
+                <div class="modal-body payment-body">
+                    <!-- Auto Check Live Status Badge -->
+                    <div class="auto-check-banner" id="autoCheckBanner">
+                        <span class="spinner-icon">🔄</span> <span id="autoCheckText">Đang tự động kiểm tra tiền về MBBank...</span>
+                    </div>
+
+                    <div class="qr-code-wrapper">
+                        <img id="qrCodeImg" src="" alt="Mã VietQR MBBank Thanh Toán" class="qr-image">
+                    </div>
+
+                    <div class="payment-details-box">
+                        <div class="pay-detail-row">
+                            <span class="pay-label">Người đền cầu:</span>
+                            <strong id="payPlayerName" class="pay-val">---</strong>
+                        </div>
+                        <div class="pay-detail-row">
+                            <span class="pay-label">Số tiền đền:</span>
+                            <strong id="payAmount" class="pay-val-highlight">0đ</strong>
+                        </div>
+                        <div class="pay-detail-row">
+                            <span class="pay-label">STK MBBank nhận:</span>
+                            <span class="pay-val-copy" id="payBankInfo">---</span>
+                            <button class="btn-copy" id="btnCopyAccNo">Copy STK</button>
+                        </div>
+                        <div class="pay-detail-row">
+                            <span class="pay-label">Nội dung CK:</span>
+                            <span class="pay-val-copy" id="payMemo">---</span>
+                            <button class="btn-copy" id="btnCopyMemo">Copy Nội dung</button>
+                        </div>
+                    </div>
+
+                    <div class="payment-actions">
+                        <button id="btnDownloadQr" class="btn btn-dark btn-block btn-lg">
+                            <i data-lucide="download"></i> Tải / Lưu Ảnh Mã QR MBBank
+                        </button>
+
+                        <button id="btnMarkPaid" class="btn btn-success btn-block btn-lg" style="margin-top: 6px;">
+                            <i data-lucide="check-circle"></i> ✅ ĐÃ NHẬN TIỀN (XÓA NỢ THỦ CÔNG)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Player Modal -->
+        <div class="modal-backdrop" id="addPlayerModal">
+            <div class="modal-content small-modal">
+                <div class="modal-header">
+                    <h3><i data-lucide="user-plus"></i> Thêm Người Chơi Mới</h3>
+                    <button class="btn-close" id="btnCloseAddPlayer"><i data-lucide="x"></i></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addPlayerForm">
+                        <div class="form-group">
+                            <label for="newPlayerName">Tên người chơi:</label>
+                            <input type="text" id="newPlayerName" placeholder="Ví dụ: Hoàng, Linh..." required class="form-control">
+                        </div>
+                        <div class="form-actions" style="margin-top: 14px;">
+                            <button type="submit" class="btn btn-success btn-block">Thêm người chơi</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Modal -->
+        <div class="modal-backdrop" id="historyModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i data-lucide="history"></i> Lịch Sử Các Trận Đấu</h3>
+                    <button class="btn-close" id="btnCloseHistory"><i data-lucide="x"></i></button>
+                </div>
+                <div class="modal-body">
+                    <div id="historyLogList" class="history-log-list">
+                        <p class="empty-msg">Chưa có trận nào được ghi nhận.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Container -->
+        <div class="toast-container" id="toastContainer"></div>
+    </div>
+
+    <script>
+/* ==========================================================================
+   BADMINTON PENALTY & VIETQR PAYMENT TRACKER - JAVASCRIPT ENGINE (MBBANK)
+   ========================================================================== */
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+
+    // --- Bank Mapping ---
+    const BANK_MAPPING = {
+        'MB': { bin: '970422', name: 'MBBank (Ngân hàng Quân Đội)' },
+        'TCB': { bin: '970407', name: 'Techcombank' },
+        'VCB': { bin: '970436', name: 'Vietcombank' },
+        'VPB': { bin: '970432', name: 'VPBank' },
+        'ACB': { bin: '970416', name: 'ACB' },
+        'BIDV': { bin: '970418', name: 'BIDV' },
+        'VTB': { bin: '970415', name: 'VietinBank' },
+        'TPB': { bin: '970423', name: 'TPBank' },
+        'STB': { bin: '970403', name: 'Sacombank' },
+        'VIB': { bin: '970441', name: 'VIB' },
+        'MSB': { bin: '970426', name: 'MSB' },
+        'SHB': { bin: '970443', name: 'SHB' }
+    };
+
+    // --- Audio Sound Engine ---
+    class SoundEngine {
+        constructor() {
+            this.ctx = null;
+            this.enabled = true;
+        }
+
+        init() {
+            if (!this.ctx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) this.ctx = new AudioContext();
+            }
+            if (this.ctx && this.ctx.state === 'suspended') {
+                this.ctx.resume();
+            }
+        }
+
+        playPenaltySound() {
+            if (!this.enabled) return;
+            this.init();
+            if (!this.ctx) return;
+
+            try {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(400, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(150, this.ctx.currentTime + 0.3);
+
+                gain.gain.setValueAtTime(0.35, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.3);
+            } catch (e) {
+                console.error("Audio error:", e);
+            }
+        }
+
+        playSuccessSound() {
+            if (!this.enabled) return;
+            this.init();
+            if (!this.ctx) return;
+
+            try {
+                this.playTone(523.25, 'triangle', 0.15, 0);   // C5
+                this.playTone(659.25, 'triangle', 0.15, 120); // E5
+                this.playTone(783.99, 'triangle', 0.35, 240); // G5
+            } catch (e) {}
+        }
+
+        playTone(freq, type, duration, delay = 0) {
+            setTimeout(() => {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + duration);
+            }, delay);
+        }
+    }
+
+    const soundEngine = new SoundEngine();
+
+    // --- State ---
+    let currentMode = '2v2'; // '2v2' or '1v1'
+    let shuttlePrice = parseInt(localStorage.getItem('badminton_shuttle_price') || '26000');
+    let bankConfig = JSON.parse(localStorage.getItem('badminton_bank_config') || '{"bankId":"MB","accountNo":"","accountName":"","sepayToken":""}');
+    let registeredPlayers = JSON.parse(localStorage.getItem('badminton_players') || '["Toàn", "Tú", "Phượng", "Tiến", "Hùng", "Nam"]');
+    let playerPenalties = JSON.parse(localStorage.getItem('badminton_penalties') || '{}');
+    let historyLog = JSON.parse(localStorage.getItem('badminton_penalty_history') || '[]');
+
+    // Admin State & PIN (Default PIN: 1234)
+    let isAdmin = false;
+    let adminPin = localStorage.getItem('badminton_admin_pin') || '1234';
+    let pendingAdminAction = null;
+
+    // Selection step state
+    let selectedWinners = [];
+    let selectedLosers = [];
+    let currentPayPlayer = null;
+    let currentQrUrl = '';
+    let autoCheckInterval = null;
+
+    // --- DOM Elements ---
+    const elements = {
+        inputShuttlePrice: document.getElementById('inputShuttlePrice'),
+        btnBankSettings: document.getElementById('btnBankSettings'),
+        btnMode1v1: document.getElementById('btnMode1v1'),
+        btnMode2v2: document.getElementById('btnMode2v2'),
+
+        btnAdminToggle: document.getElementById('btnAdminToggle'),
+        adminBtnText: document.getElementById('adminBtnText'),
+        adminIcon: document.getElementById('adminIcon'),
+        btnChangePin: document.getElementById('btnChangePin'),
+
+        // Admin PIN Modal
+        adminPinModal: document.getElementById('adminPinModal'),
+        adminPinForm: document.getElementById('adminPinForm'),
+        adminPinInput: document.getElementById('adminPinInput'),
+        pinErrorMsg: document.getElementById('pinErrorMsg'),
+        btnCloseAdminPin: document.getElementById('btnCloseAdminPin'),
+
+        // Change Admin PIN Modal
+        changePinModal: document.getElementById('changePinModal'),
+        changePinForm: document.getElementById('changePinForm'),
+        oldPinInput: document.getElementById('oldPinInput'),
+        newPinInput: document.getElementById('newPinInput'),
+        confirmPinInput: document.getElementById('confirmPinInput'),
+        changePinError: document.getElementById('changePinError'),
+        btnCloseChangePin: document.getElementById('btnCloseChangePin'),
+
+        stepGuideBox: document.getElementById('stepGuideBox'),
+        stepBadge: document.getElementById('stepBadge'),
+        stepTitle: document.getElementById('stepTitle'),
+        stepSub: document.getElementById('stepSub'),
+
+        winnerPreviewNames: document.getElementById('winnerPreviewNames'),
+        loserPreviewNames: document.getElementById('loserPreviewNames'),
+        btnClearSelection: document.getElementById('btnClearSelection'),
+
+        playerTilesGrid: document.getElementById('playerTilesGrid'),
+        btnAddPlayerBtn: document.getElementById('btnAddPlayerBtn'),
+
+        penaltyList: document.getElementById('penaltyList'),
+        totalShuttlesBadge: document.getElementById('totalShuttlesBadge'),
+        totalMoneyBadge: document.getElementById('totalMoneyBadge'),
+
+        btnAudioToggle: document.getElementById('btnAudioToggle'),
+        audioIcon: document.getElementById('audioIcon'),
+        btnShowHistory: document.getElementById('btnShowHistory'),
+        btnResetAll: document.getElementById('btnResetAll'),
+
+        // Bank Settings Modal
+        bankModal: document.getElementById('bankModal'),
+        bankForm: document.getElementById('bankForm'),
+        bankSelect: document.getElementById('bankSelect'),
+        bankAccNo: document.getElementById('bankAccNo'),
+        bankAccName: document.getElementById('bankAccName'),
+        sepayToken: document.getElementById('sepayToken'),
+        btnCloseBank: document.getElementById('btnCloseBank'),
+
+        // Payment Modal
+        paymentModal: document.getElementById('paymentModal'),
+        btnClosePayment: document.getElementById('btnClosePayment'),
+        autoCheckBanner: document.getElementById('autoCheckBanner'),
+        autoCheckText: document.getElementById('autoCheckText'),
+        qrCodeImg: document.getElementById('qrCodeImg'),
+        payPlayerName: document.getElementById('payPlayerName'),
+        payAmount: document.getElementById('payAmount'),
+        payBankInfo: document.getElementById('payBankInfo'),
+        payMemo: document.getElementById('payMemo'),
+        btnCopyAccNo: document.getElementById('btnCopyAccNo'),
+        btnCopyMemo: document.getElementById('btnCopyMemo'),
+        btnDownloadQr: document.getElementById('btnDownloadQr'),
+        btnMarkPaid: document.getElementById('btnMarkPaid'),
+
+        // Add Player Modal
+        addPlayerModal: document.getElementById('addPlayerModal'),
+        addPlayerForm: document.getElementById('addPlayerForm'),
+        newPlayerName: document.getElementById('newPlayerName'),
+        btnCloseAddPlayer: document.getElementById('btnCloseAddPlayer'),
+
+        // History Modal
+        historyModal: document.getElementById('historyModal'),
+        btnCloseHistory: document.getElementById('btnCloseHistory'),
+        historyLogList: document.getElementById('historyLogList'),
+
+        toastContainer: document.getElementById('toastContainer')
+    };
+
+    // Initialize Bank Inputs
+    elements.inputShuttlePrice.value = shuttlePrice;
+    elements.bankSelect.value = bankConfig.bankId || 'MB';
+    elements.bankAccNo.value = bankConfig.accountNo || '';
+    elements.bankAccName.value = bankConfig.accountName || '';
+    elements.sepayToken.value = bankConfig.sepayToken || '';
+
+    // --- Admin Authentication Engine ---
+    function requireAdmin(callback) {
+        if (isAdmin) {
+            if (callback) callback();
+        } else {
+            pendingAdminAction = callback || null;
+            elements.adminPinInput.value = '';
+            elements.pinErrorMsg.style.display = 'none';
+            elements.adminPinModal.classList.add('active');
+            setTimeout(() => elements.adminPinInput.focus(), 150);
+        }
+    }
+
+    function updateAdminUI() {
+        if (isAdmin) {
+            elements.btnAdminToggle.className = 'btn btn-sm btn-admin-active';
+            elements.adminBtnText.textContent = '👑 Admin (Đăng xuất)';
+            elements.adminIcon.setAttribute('data-lucide', 'shield-check');
+            elements.btnChangePin.style.display = 'inline-flex';
+            elements.inputShuttlePrice.disabled = false;
+        } else {
+            elements.btnAdminToggle.className = 'btn btn-warning btn-sm';
+            elements.adminBtnText.textContent = '🔑 Admin PIN';
+            elements.adminIcon.setAttribute('data-lucide', 'shield');
+            elements.btnChangePin.style.display = 'none';
+            elements.inputShuttlePrice.disabled = true;
+        }
+        if (window.lucide) lucide.createIcons();
+        renderLeaderboard();
+    }
+
+    // --- Helpers ---
+    function formatMoney(amount) {
+        return new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
+    }
+
+    function showToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = message;
+        elements.toastContainer.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    function saveState() {
+        localStorage.setItem('badminton_shuttle_price', shuttlePrice.toString());
+        localStorage.setItem('badminton_bank_config', JSON.stringify(bankConfig));
+        localStorage.setItem('badminton_players', JSON.stringify(registeredPlayers));
+        localStorage.setItem('badminton_penalties', JSON.stringify(playerPenalties));
+        localStorage.setItem('badminton_penalty_history', JSON.stringify(historyLog));
+    }
+
+    function getNeededCount() {
+        return currentMode === '2v2' ? 2 : 1;
+    }
+
+    // --- Server-Sent Events (Real-time SePay Webhook Listener) ---
+    function initRealtimeSePayListener() {
+        if (!!window.EventSource) {
+            const source = new EventSource('/api/events');
+
+            source.addEventListener('message', (e) => {
+                try {
+                    const data = JSON.parse(e.data);
+                    if (data.type === 'SEPAY_TRANSACTION') {
+                        console.log("⚡ Instant SePay Webhook Event Received:", data);
+                        handleIncomingTransaction(data.amount, data.content);
+                    }
+                } catch (err) {
+                    console.error("SSE parse error:", err);
+                }
+            });
+        }
+    }
+
+    function handleIncomingTransaction(amount, content) {
+        if (!content) return;
+        const normalizedContent = content.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+        registeredPlayers.forEach(playerName => {
+            const normalizedPlayer = playerName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            if (normalizedContent.includes(normalizedPlayer)) {
+                markPlayerAsPaid(playerName, true, amount);
+            }
+        });
+    }
+
+    // --- Selection UI ---
+    function updateSelectionUI() {
+        const needed = getNeededCount();
+        const deltaQuả = currentMode === '2v2' ? 0.5 : 1.0;
+        const deltaTiền = deltaQuả * shuttlePrice;
+
+        if (selectedWinners.length < needed) {
+            elements.stepGuideBox.className = 'step-guide-box step-winner';
+            elements.stepBadge.textContent = 'LẦN BẤM 1';
+            elements.stepTitle.textContent = `🏆 CHỌN NGƯỜI THẮNG (${selectedWinners.length}/${needed})`;
+            elements.stepSub.textContent = `Bấm chọn ${needed} người chiến thắng trận này`;
+        } else if (selectedLosers.length < needed) {
+            elements.stepGuideBox.className = 'step-guide-box step-loser';
+            elements.stepBadge.textContent = 'LẦN BẤM 2';
+            elements.stepTitle.textContent = `❌ CHỌN NGƯỜI THUA (${selectedLosers.length}/${needed})`;
+            elements.stepSub.textContent = `Bấm chọn ${needed} người thua trận này (+${deltaQuả} quả / ${formatMoney(deltaTiền)})`;
+        }
+
+        elements.winnerPreviewNames.textContent = selectedWinners.length > 0 ? selectedWinners.join(' & ') : 'Chưa chọn';
+        elements.loserPreviewNames.textContent = selectedLosers.length > 0 ? selectedLosers.join(' & ') : 'Chưa chọn';
+
+        // Render Player Tiles
+        elements.playerTilesGrid.innerHTML = '';
+        registeredPlayers.forEach(name => {
+            const tile = document.createElement('div');
+            let isWinner = selectedWinners.includes(name);
+            let isLoser = selectedLosers.includes(name);
+
+            let tileClass = 'player-tile';
+            let badgeHtml = '';
+
+            if (isWinner) {
+                tileClass += ' selected-winner';
+                badgeHtml = '<span class="status-icon-badge">🏆 THẮNG</span>';
+            } else if (isLoser) {
+                tileClass += ' selected-loser';
+                badgeHtml = '<span class="status-icon-badge">❌ THUA</span>';
+            }
+
+            tile.className = tileClass;
+            tile.innerHTML = `
+                <div class="tile-name">${name}</div>
+                ${badgeHtml}
+            `;
+
+            tile.addEventListener('click', () => handlePlayerTileClick(name));
+            elements.playerTilesGrid.appendChild(tile);
+        });
+    }
+
+    function handlePlayerTileClick(name) {
+        const needed = getNeededCount();
+
+        if (selectedWinners.includes(name)) {
+            selectedWinners = selectedWinners.filter(n => n !== name);
+            updateSelectionUI();
+            return;
+        }
+
+        if (selectedLosers.includes(name)) {
+            selectedLosers = selectedLosers.filter(n => n !== name);
+            updateSelectionUI();
+            return;
+        }
+
+        if (selectedWinners.length < needed) {
+            selectedWinners.push(name);
+            updateSelectionUI();
+            if (selectedWinners.length === needed) {
+                showToast(`🏆 Đã chọn bên THẮNG: ${selectedWinners.join(' & ')} ➔ Bấm chọn bên THUA`);
+            }
+            return;
+        }
+
+        if (selectedLosers.length < needed) {
+            selectedLosers.push(name);
+            updateSelectionUI();
+
+            if (selectedLosers.length === needed) {
+                commitMatchResult();
+            }
+        }
+    }
+
+    function commitMatchResult() {
+        const deltaQuả = currentMode === '2v2' ? 0.5 : 1.0;
+        const deltaTiền = deltaQuả * shuttlePrice;
+
+        const winnersStr = selectedWinners.join(' & ');
+        const losersStr = selectedLosers.join(' & ');
+
+        selectedLosers.forEach(name => {
+            playerPenalties[name] = (playerPenalties[name] || 0) + deltaQuả;
+        });
+
+        const timeStr = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+        historyLog.unshift({
+            time: timeStr,
+            winners: winnersStr,
+            losers: losersStr,
+            penalty: deltaQuả,
+            money: deltaTiền,
+            mode: currentMode
+        });
+
+        soundEngine.playPenaltySound();
+        saveState();
+
+        showToast(`🏆 ${winnersStr} THẮNG  ➔  ❌ ${losersStr} THUA (+${deltaQuả} quả / ${formatMoney(deltaTiền)})!`);
+
+        clearSelections();
+        renderLeaderboard();
+    }
+
+    function clearSelections() {
+        selectedWinners = [];
+        selectedLosers = [];
+        updateSelectionUI();
+    }
+
+    // --- VietQR Payment & Auto Check Engine ---
+    function openPaymentModal(playerName) {
+        if (!bankConfig.accountNo) {
+            showToast("⚠️ Vui lòng chuyển sang Admin và cài đặt STK MBBank!");
+            requireAdmin(() => {
+                elements.bankModal.classList.add('active');
+            });
+            return;
+        }
+
+        const count = playerPenalties[playerName] || 0;
+        const amount = count * shuttlePrice;
+
+        if (amount <= 0) {
+            showToast(`${playerName} không nợ tiền cầu nào!`);
+            return;
+        }
+
+        currentPayPlayer = playerName;
+
+        const memo = `Den cau ${playerName}`.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D");
+        const bankId = bankConfig.bankId || 'MB';
+        const bankInfo = BANK_MAPPING[bankId] || { name: 'MBBank', bin: '970422' };
+        const accountNo = bankConfig.accountNo;
+        const accountName = bankConfig.accountName || '';
+
+        // Official VietQR API Image URL for MBBank
+        currentQrUrl = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(memo)}`;
+        if (accountName) {
+            currentQrUrl += `&accountName=${encodeURIComponent(accountName)}`;
+        }
+
+        elements.qrCodeImg.src = currentQrUrl;
+        elements.payPlayerName.textContent = playerName;
+        elements.payAmount.textContent = formatMoney(amount);
+        elements.payBankInfo.textContent = `${bankInfo.name} - ${accountNo}`;
+        elements.payMemo.textContent = memo;
+
+        // Display or Hide Manual "Mark Paid" button based on Admin privileges
+        if (isAdmin) {
+            elements.btnMarkPaid.style.display = 'block';
+        } else {
+            elements.btnMarkPaid.style.display = 'block'; // Players can click, but clicking prompts PIN
+        }
+
+        elements.paymentModal.classList.add('active');
+
+        startAutoCheckPolling(playerName, amount, memo);
+    }
+
+    function startAutoCheckPolling(playerName, expectedAmount, memoText) {
+        stopAutoCheckPolling();
+
+        if (bankConfig.sepayToken) {
+            elements.autoCheckText.textContent = `Đang tự động quét tiền về MBBank từ SePay API...`;
+        } else {
+            elements.autoCheckText.textContent = `Đang chờ phát tín hiệu chuyển khoản MBBank...`;
+        }
+
+        autoCheckInterval = setInterval(() => {
+            if (!currentPayPlayer || currentPayPlayer !== playerName) return;
+
+            if (bankConfig.sepayToken && bankConfig.accountNo) {
+                const apiUrl = `https://my.sepay.vn/userapi/transactions/list?account_number=${bankConfig.accountNo}`;
+                fetch(apiUrl, {
+                    headers: {
+                        'Authorization': `Bearer ${bankConfig.sepayToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.transactions && Array.isArray(data.transactions)) {
+                        const match = data.transactions.find(t => {
+                            const matchAmount = parseInt(t.amount_in) >= expectedAmount;
+                            const matchMemo = t.transaction_content && t.transaction_content.toLowerCase().includes(playerName.toLowerCase());
+                            return matchAmount && matchMemo;
+                        });
+
+                        if (match) {
+                            markPlayerAsPaid(playerName, true, match.amount_in);
+                        }
+                    }
+                })
+                .catch(err => console.error("SePay MBBank API Error:", err));
+            }
+        }, 4000);
+    }
+
+    function stopAutoCheckPolling() {
+        if (autoCheckInterval) {
+            clearInterval(autoCheckInterval);
+            autoCheckInterval = null;
+        }
+    }
+
+    function markPlayerAsPaid(playerName, isAuto = false, amountReceived = 0) {
+        playerPenalties[playerName] = 0;
+        saveState();
+        renderLeaderboard();
+        stopAutoCheckPolling();
+        elements.paymentModal.classList.remove('active');
+        soundEngine.playSuccessSound();
+
+        if (isAuto) {
+            showToast(`🎉 SEPAY XÁC NHẬN: ${playerName} đã chuyển MBBank ${formatMoney(amountReceived || 0)} thành công!`);
+        } else {
+            showToast(`🎉 XÁC NHẬN: ${playerName} đã thanh toán hết nợ!`);
+        }
+    }
+
+    // --- Render Leaderboard ---
+    function renderLeaderboard() {
+        registeredPlayers.forEach(name => {
+            if (playerPenalties[name] === undefined) {
+                playerPenalties[name] = 0;
+            }
+        });
+
+        const sortedPlayers = [...registeredPlayers];
+        sortedPlayers.sort((a, b) => (playerPenalties[b] || 0) - (playerPenalties[a] || 0));
+
+        elements.penaltyList.innerHTML = '';
+        let grandTotalShuttles = 0;
+
+        sortedPlayers.forEach((name, index) => {
+            const count = playerPenalties[name] || 0;
+            grandTotalShuttles += count;
+
+            const moneyOwed = count * shuttlePrice;
+            const isLeader = index === 0 && count > 0;
+
+            const card = document.createElement('div');
+            card.className = `penalty-card-item ${isLeader ? 'leader' : ''}`;
+            card.innerHTML = `
+                <div class="player-info">
+                    <div class="player-avatar">${name.charAt(0).toUpperCase()}</div>
+                    <div class="player-name-text">${name}</div>
+                </div>
+
+                <div class="penalty-controls">
+                    <div class="shuttle-count-box">
+                        <div class="shuttle-count-val">
+                            <span>${count}</span> <span style="font-size:1.2rem;">🏸</span>
+                        </div>
+                        <div class="player-money-val">${formatMoney(moneyOwed)}</div>
+                    </div>
+
+                    ${moneyOwed > 0 ? `
+                        <button class="btn-pay-qr" data-pay-name="${name}">
+                            💳 QR CẦU
+                        </button>
+                    ` : ''}
+
+                    ${isAdmin ? `
+                        <div class="btn-group-counter">
+                            <button class="btn-counter btn-minus" data-name="${name}">-0.5</button>
+                            <button class="btn-counter btn-plus" data-name="${name}">+0.5</button>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            elements.penaltyList.appendChild(card);
+        });
+
+        const grandTotalMoney = grandTotalShuttles * shuttlePrice;
+        elements.totalShuttlesBadge.textContent = `${grandTotalShuttles} quả`;
+        elements.totalMoneyBadge.textContent = `${formatMoney(grandTotalMoney)}`;
+
+        // Register Pay QR button events
+        document.querySelectorAll('.btn-pay-qr').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const name = e.target.getAttribute('data-pay-name');
+                openPaymentModal(name);
+            });
+        });
+
+        // Counter buttons (Admin only)
+        if (isAdmin) {
+            document.querySelectorAll('.btn-minus').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const name = e.target.getAttribute('data-name');
+                    if (playerPenalties[name] > 0) {
+                        playerPenalties[name] = Math.max(0, playerPenalties[name] - 0.5);
+                        saveState();
+                        renderLeaderboard();
+                    }
+                });
+            });
+
+            document.querySelectorAll('.btn-plus').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const name = e.target.getAttribute('data-name');
+                    playerPenalties[name] = (playerPenalties[name] || 0) + 0.5;
+                    saveState();
+                    renderLeaderboard();
+                });
+            });
+        }
+    }
+
+    function renderHistoryLog() {
+        elements.historyLogList.innerHTML = '';
+        if (historyLog.length === 0) {
+            elements.historyLogList.innerHTML = '<p class="empty-msg">Chưa có trận nào được ghi nhận.</p>';
+            return;
+        }
+
+        historyLog.forEach(log => {
+            const item = document.createElement('div');
+            item.className = 'history-log-item';
+            item.innerHTML = `
+                <div>
+                    🏆 <strong>${log.winners}</strong> thắng ➔ ❌ <strong>${log.losers}</strong> thua
+                </div>
+                <div style="font-size: 0.8rem; opacity: 0.8; text-align: right;">
+                    +${log.penalty} quả / người (${formatMoney(log.money)})<br>
+                    <span style="opacity: 0.6;">${log.time}</span>
+                </div>
+            `;
+            elements.historyLogList.appendChild(item);
+        });
+    }
+
+    // --- Mode Switch ---
+    function setMode(mode) {
+        currentMode = mode;
+        clearSelections();
+        if (mode === '2v2') {
+            elements.btnMode2v2.classList.add('active');
+            elements.btnMode1v1.classList.remove('active');
+        } else {
+            elements.btnMode1v1.classList.add('active');
+            elements.btnMode2v2.classList.remove('active');
+        }
+        updateSelectionUI();
+    }
+
+    // --- Event Listeners ---
+
+    // Admin Toggle & PIN Handlers
+    elements.btnAdminToggle.addEventListener('click', () => {
+        if (isAdmin) {
+            isAdmin = false;
+            showToast("🔒 Đã đăng xuất khỏi quyền Admin!");
+            updateAdminUI();
+        } else {
+            requireAdmin(() => {
+                showToast("👑 Đã đăng nhập quyền Admin thành công!");
+                updateAdminUI();
+            });
+        }
+    });
+
+    elements.btnCloseAdminPin.addEventListener('click', () => {
+        elements.adminPinModal.classList.remove('active');
+        pendingAdminAction = null;
+    });
+
+    elements.adminPinForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const input = elements.adminPinInput.value.trim();
+        if (input === adminPin) {
+            isAdmin = true;
+            elements.adminPinModal.classList.remove('active');
+            updateAdminUI();
+            showToast("👑 Đã xác thực thành công quyền Admin!");
+            if (pendingAdminAction) {
+                const action = pendingAdminAction;
+                pendingAdminAction = null;
+                action();
+            }
+        } else {
+            elements.pinErrorMsg.style.display = 'block';
+            elements.adminPinInput.value = '';
+            elements.adminPinInput.focus();
+        }
+    });
+
+    // Change Admin PIN Handlers
+    elements.btnChangePin.addEventListener('click', () => {
+        requireAdmin(() => {
+            elements.oldPinInput.value = '';
+            elements.newPinInput.value = '';
+            elements.confirmPinInput.value = '';
+            elements.changePinError.style.display = 'none';
+            elements.changePinModal.classList.add('active');
+        });
+    });
+
+    elements.btnCloseChangePin.addEventListener('click', () => {
+        elements.changePinModal.classList.remove('active');
+    });
+
+    elements.changePinForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const oldPin = elements.oldPinInput.value.trim();
+        const newPin = elements.newPinInput.value.trim();
+        const confirmPin = elements.confirmPinInput.value.trim();
+
+        if (oldPin !== adminPin) {
+            elements.changePinError.textContent = "⚠️ Mã PIN hiện tại không đúng!";
+            elements.changePinError.style.display = 'block';
+            return;
+        }
+        if (newPin.length < 4) {
+            elements.changePinError.textContent = "⚠️ Mã PIN mới phải có ít nhất 4 ký tự!";
+            elements.changePinError.style.display = 'block';
+            return;
+        }
+        if (newPin !== confirmPin) {
+            elements.changePinError.textContent = "⚠️ Mã PIN xác nhận không trùng khớp!";
+            elements.changePinError.style.display = 'block';
+            return;
+        }
+
+        adminPin = newPin;
+        localStorage.setItem('badminton_admin_pin', adminPin);
+        elements.changePinModal.classList.remove('active');
+        showToast("🎉 Đã thay đổi Mã PIN Admin thành công!");
+    });
+
+    // Price input change
+    elements.inputShuttlePrice.addEventListener('change', (e) => {
+        if (!isAdmin) return;
+        const val = parseInt(e.target.value);
+        if (!isNaN(val) && val >= 0) {
+            shuttlePrice = val;
+            saveState();
+            updateSelectionUI();
+            renderLeaderboard();
+            showToast(`Đã đổi giá quả cầu: ${formatMoney(shuttlePrice)}`);
+        }
+    });
+
+    elements.inputShuttlePrice.addEventListener('focus', () => {
+        if (!isAdmin) {
+            elements.inputShuttlePrice.blur();
+            requireAdmin(() => {
+                elements.inputShuttlePrice.focus();
+            });
+        }
+    });
+
+    elements.btnMode1v1.addEventListener('click', () => setMode('1v1'));
+    elements.btnMode2v2.addEventListener('click', () => setMode('2v2'));
+    elements.btnClearSelection.addEventListener('click', clearSelections);
+
+    // Bank settings modal (Admin Protected)
+    elements.btnBankSettings.addEventListener('click', () => {
+        requireAdmin(() => {
+            elements.bankModal.classList.add('active');
+        });
+    });
+    elements.btnCloseBank.addEventListener('click', () => elements.bankModal.classList.remove('active'));
+
+    elements.bankForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (!isAdmin) return;
+        bankConfig.bankId = elements.bankSelect.value;
+        bankConfig.accountNo = elements.bankAccNo.value.trim();
+        bankConfig.accountName = elements.bankAccName.value.trim().toUpperCase();
+        bankConfig.sepayToken = elements.sepayToken.value.trim();
+
+        saveState();
+        elements.bankModal.classList.remove('active');
+        showToast("✅ Đã lưu cấu hình tài khoản MBBank & SePay Token!");
+    });
+
+    // Payment modal copy & mark paid events
+    elements.btnClosePayment.addEventListener('click', () => {
+        stopAutoCheckPolling();
+        elements.paymentModal.classList.remove('active');
+    });
+
+    elements.btnCopyAccNo.addEventListener('click', () => {
+        if (bankConfig.accountNo) {
+            navigator.clipboard.writeText(bankConfig.accountNo);
+            showToast("📋 Đã sao chép Số Tài Khoản MBBank!");
+        }
+    });
+
+    elements.btnCopyMemo.addEventListener('click', () => {
+        const memo = elements.payMemo.textContent;
+        navigator.clipboard.writeText(memo);
+        showToast("📋 Đã sao chép Nội dung chuyển khoản!");
+    });
+
+    // Download QR Image handler
+    elements.btnDownloadQr.addEventListener('click', () => {
+        if (currentQrUrl) {
+            fetch(currentQrUrl)
+                .then(res => res.blob())
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = `VietQR_MBBank_${currentPayPlayer}_${Date.now()}.png`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    showToast("📥 Đã tải ảnh QR MBBank về máy!");
+                })
+                .catch(err => {
+                    console.error(err);
+                    window.open(currentQrUrl, '_blank');
+                });
+        }
+    });
+
+    elements.btnMarkPaid.addEventListener('click', () => {
+        requireAdmin(() => {
+            if (currentPayPlayer) {
+                markPlayerAsPaid(currentPayPlayer, false);
+            }
+        });
+    });
+
+    // Add Player Modal (Admin Protected)
+    elements.btnAddPlayerBtn.addEventListener('click', () => {
+        requireAdmin(() => {
+            elements.addPlayerModal.classList.add('active');
+        });
+    });
+    elements.btnCloseAddPlayer.addEventListener('click', () => elements.addPlayerModal.classList.remove('active'));
+
+    elements.addPlayerForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (!isAdmin) return;
+        const name = elements.newPlayerName.value.trim();
+        if (name && !registeredPlayers.includes(name)) {
+            registeredPlayers.push(name);
+            playerPenalties[name] = 0;
+            saveState();
+            updateSelectionUI();
+            renderLeaderboard();
+            elements.newPlayerName.value = '';
+            elements.addPlayerModal.classList.remove('active');
+            showToast(`Đã thêm người chơi: ${name}`);
+        }
+    });
+
+    // History Modal
+    elements.btnShowHistory.addEventListener('click', () => {
+        renderHistoryLog();
+        elements.historyModal.classList.add('active');
+    });
+
+    elements.btnCloseHistory.addEventListener('click', () => elements.historyModal.classList.remove('active'));
+
+    // Reset All (Admin Protected)
+    elements.btnResetAll.addEventListener('click', () => {
+        requireAdmin(() => {
+            if (confirm("Bạn có chắc chắn muốn đặt lại tất cả số quả cầu và tiền phạt về 0?")) {
+                playerPenalties = {};
+                historyLog = [];
+                clearSelections();
+                stopAutoCheckPolling();
+                saveState();
+                renderLeaderboard();
+                showToast("Đã đặt lại toàn bộ!");
+            }
+        });
+    });
+
+    elements.btnAudioToggle.addEventListener('click', () => {
+        soundEngine.enabled = !soundEngine.enabled;
+        elements.audioIcon.setAttribute('data-lucide', soundEngine.enabled ? 'volume-2' : 'volume-x');
+        if (window.lucide) lucide.createIcons();
+        showToast(soundEngine.enabled ? "Đã bật âm thanh" : "Đã tắt âm thanh");
+    });
+
+    // Init
+    initRealtimeSePayListener();
+    updateSelectionUI();
+    updateAdminUI();
+});
+    </script>
+</body>
+</html>

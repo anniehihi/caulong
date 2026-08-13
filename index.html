@@ -15,45 +15,42 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
     <style>
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Montserrat:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
 
 :root {
-    --bg-dark: #08080a;
-    --bg-card: rgba(18, 18, 22, 0.92);
-    --bg-card-solid: #121216;
-    --bg-card-hover: #1c1c22;
+    --bg-dark: #070913;
+    --bg-card: rgba(15, 18, 35, 0.78);
+    --bg-card-solid: #0d1021;
+    --bg-card-hover: #151a33;
     
-    /* Gucci Signature Color Palette */
-    --gucci-gold: #d4af37;
-    --gucci-gold-light: #f3e5ab;
-    --gucci-gold-dark: #aa7c11;
-    --gucci-gold-glow: rgba(212, 175, 55, 0.25);
-    
-    --gucci-green: #006b3f;
-    --gucci-green-bright: #10b981;
-    --gucci-green-glow: rgba(0, 107, 63, 0.35);
+    /* Web3 Neon Color Palette */
+    --web3-cyan: #00f2fe;
+    --web3-blue: #4facfe;
+    --web3-purple: #7f00ff;
+    --web3-violet: #a855f7;
+    --web3-emerald: #00ff87;
+    --web3-rose: #ff0844;
+    --web3-gold: #ffb703;
 
-    --gucci-red: #c8102e;
-    --gucci-red-bright: #f43f5e;
-    --gucci-red-glow: rgba(200, 16, 46, 0.35);
-
-    --border-gold: rgba(212, 175, 55, 0.22);
-    --border-gold-hover: rgba(212, 175, 55, 0.5);
+    --border-cyan: rgba(0, 242, 254, 0.22);
+    --border-purple: rgba(127, 0, 255, 0.3);
     --border-color: rgba(255, 255, 255, 0.08);
+    --border-hover: rgba(0, 242, 254, 0.45);
 
-    --text-main: #f8f8f8;
-    --text-muted: #a1a1aa;
-    --text-dim: #71717a;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
 
-    --radius-lg: 16px;
-    --radius-md: 10px;
-    --radius-sm: 6px;
+    --radius-lg: 18px;
+    --radius-md: 12px;
+    --radius-sm: 8px;
 
-    --font-title: 'Cinzel', serif;
-    --font-main: 'Montserrat', sans-serif;
-    
-    --shadow-card: 0 12px 40px rgba(0, 0, 0, 0.7);
-    --shadow-gold: 0 4px 20px rgba(212, 175, 55, 0.25);
+    --font-title: 'Space Grotesk', sans-serif;
+    --font-main: 'Plus Jakarta Sans', sans-serif;
+
+    --shadow-card: 0 16px 40px -10px rgba(0, 0, 0, 0.8), 0 0 30px rgba(127, 0, 255, 0.08);
+    --shadow-cyan-glow: 0 0 25px rgba(0, 242, 254, 0.35);
+    --shadow-purple-glow: 0 0 25px rgba(127, 0, 255, 0.35);
 }
 
 * {
@@ -68,9 +65,9 @@ body {
     font-family: var(--font-main);
     background-color: var(--bg-dark);
     background-image: 
-        radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.08) 0%, transparent 60%),
-        radial-gradient(circle at 100% 100%, rgba(0, 107, 63, 0.05) 0%, transparent 50%),
-        radial-gradient(circle at 0% 100%, rgba(200, 16, 46, 0.05) 0%, transparent 50%);
+        radial-gradient(circle at 50% -10%, rgba(127, 0, 255, 0.18) 0%, transparent 60%),
+        radial-gradient(circle at 100% 100%, rgba(0, 242, 254, 0.12) 0%, transparent 50%),
+        radial-gradient(circle at 0% 100%, rgba(0, 255, 135, 0.08) 0%, transparent 50%);
     background-attachment: fixed;
     color: var(--text-main);
     min-height: 100vh;
@@ -89,7 +86,7 @@ body {
     gap: 14px;
 }
 
-/* Gucci Luxury Header */
+/* Web3 Holographic Header */
 .app-header {
     display: flex;
     align-items: center;
@@ -97,15 +94,15 @@ body {
     background: var(--bg-card);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--border-gold);
+    border: 1px solid var(--border-cyan);
     padding: 14px 18px;
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-card), 0 0 15px rgba(212, 175, 55, 0.06);
+    box-shadow: var(--shadow-card);
     position: relative;
     overflow: hidden;
 }
 
-/* Subtle Gucci Web Stripe accent line on top */
+/* Web3 Top Neon Gradient Glow Bar */
 .app-header::before {
     content: '';
     position: absolute;
@@ -113,27 +110,27 @@ body {
     left: 0;
     right: 0;
     height: 2px;
-    background: linear-gradient(90deg, var(--gucci-green) 0%, var(--gucci-green) 40%, var(--gucci-red) 40%, var(--gucci-red) 60%, var(--gucci-green) 60%, var(--gucci-green) 100%);
+    background: linear-gradient(90deg, #00f2fe 0%, #7f00ff 50%, #00ff87 100%);
+    box-shadow: 0 0 10px #00f2fe;
 }
 
 .logo-group {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
 }
 
 .logo-icon {
     font-size: 1.4rem;
-    filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.5));
+    filter: drop-shadow(0 0 12px rgba(0, 242, 254, 0.6));
 }
 
 .logo-text h1 {
     font-family: var(--font-title);
     font-size: 1.15rem;
-    font-weight: 800;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    background: linear-gradient(135deg, #fff3d1 0%, #d4af37 50%, #aa7c11 100%);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    background: linear-gradient(135deg, #ffffff 0%, #00f2fe 50%, #a855f7 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -141,10 +138,7 @@ body {
 .logo-text h1 span {
     color: var(--text-muted);
     -webkit-text-fill-color: var(--text-muted);
-    font-family: var(--font-main);
-    font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 1px;
+    font-weight: 500;
 }
 
 .header-right-actions {
@@ -154,23 +148,24 @@ body {
 }
 
 .badge-status {
+    font-family: var(--font-title);
     font-size: 0.72rem;
     padding: 4px 12px;
     border-radius: 20px;
     font-weight: 600;
-    background: rgba(212, 175, 55, 0.06);
-    color: var(--gucci-gold-light);
-    border: 1px solid var(--border-gold);
-    letter-spacing: 0.5px;
+    background: rgba(0, 242, 254, 0.06);
+    color: var(--web3-cyan);
+    border: 1px solid var(--border-cyan);
+    box-shadow: 0 0 10px rgba(0, 242, 254, 0.1);
 }
 
 .icon-action-btn {
     width: 38px;
     height: 38px;
     border-radius: var(--radius-md);
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid var(--border-gold);
-    color: var(--gucci-gold);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -179,10 +174,11 @@ body {
 }
 
 .icon-action-btn:hover {
-    background: rgba(212, 175, 55, 0.15);
-    border-color: var(--gucci-gold);
-    box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
-    transform: translateY(-1px);
+    background: rgba(0, 242, 254, 0.12);
+    border-color: var(--web3-cyan);
+    color: var(--web3-cyan);
+    box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+    transform: translateY(-2px);
 }
 
 .btn-admin {
@@ -190,34 +186,34 @@ body {
     font-size: 0.78rem;
     border-radius: var(--radius-md);
     font-weight: 700;
-    background: linear-gradient(135deg, rgba(212, 175, 55, 0.12) 0%, rgba(18, 18, 22, 0.8) 100%);
-    color: var(--gucci-gold);
-    border: 1px solid var(--border-gold);
+    font-family: var(--font-title);
+    background: rgba(127, 0, 255, 0.15);
+    color: var(--web3-violet);
+    border: 1px solid var(--border-purple);
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 6px;
-    letter-spacing: 0.5px;
     transition: all 0.25s ease;
 }
 
 .btn-admin-active {
-    background: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%) !important;
-    color: #000000 !important;
-    border-color: #f3e5ab !important;
-    font-weight: 800 !important;
-    box-shadow: var(--shadow-gold);
+    background: linear-gradient(135deg, #7f00ff 0%, #e100ff 100%) !important;
+    color: #ffffff !important;
+    border-color: #e100ff !important;
+    box-shadow: var(--shadow-purple-glow);
 }
 
-/* Gucci Segmented Mode Bar */
+/* Web3 Segmented Mode Selector */
 .mode-selector-bar {
     display: flex;
     gap: 6px;
     padding: 5px;
     background: var(--bg-card);
-    backdrop-filter: blur(16px);
+    backdrop-filter: blur(20px);
     border-radius: var(--radius-lg);
-    border: 1px solid var(--border-gold);
+    border: 1px solid var(--border-cyan);
+    box-shadow: var(--shadow-card);
 }
 
 .mode-btn {
@@ -227,18 +223,18 @@ body {
     border-radius: var(--radius-md);
     background: transparent;
     color: var(--text-muted);
-    font-size: 0.82rem;
+    font-family: var(--font-title);
+    font-size: 0.84rem;
     font-weight: 700;
-    letter-spacing: 0.5px;
     cursor: pointer;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .mode-btn.active {
-    background: linear-gradient(135deg, rgba(212, 175, 55, 0.2) 0%, rgba(20, 20, 26, 0.95) 100%);
-    color: var(--gucci-gold-light);
-    border: 1px solid var(--gucci-gold);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 10px rgba(212, 175, 55, 0.2);
+    background: linear-gradient(135deg, rgba(0, 242, 254, 0.2) 0%, rgba(127, 0, 255, 0.3) 100%);
+    color: #ffffff;
+    border: 1px solid var(--web3-cyan);
+    box-shadow: 0 0 20px rgba(0, 242, 254, 0.3);
 }
 
 /* Main Layout Grid */
@@ -303,16 +299,21 @@ body {
 .panel-card {
     background: var(--bg-card);
     backdrop-filter: blur(20px);
-    border: 1px solid var(--border-gold);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     padding: 16px;
     display: flex;
     flex-direction: column;
     gap: 14px;
     box-shadow: var(--shadow-card);
+    transition: border-color 0.25s ease;
 }
 
-/* Step Guide Box */
+.panel-card:hover {
+    border-color: var(--border-cyan);
+}
+
+/* Web3 Step Box */
 .step-guide-box {
     padding: 12px 16px;
     border-radius: var(--radius-md);
@@ -322,33 +323,32 @@ body {
 }
 
 .step-guide-box.step-winner {
-    border-color: var(--gucci-green);
-    background: rgba(0, 107, 63, 0.12);
-    box-shadow: inset 0 0 15px rgba(0, 107, 63, 0.15);
+    border-color: rgba(0, 255, 135, 0.4);
+    background: rgba(0, 255, 135, 0.08);
+    box-shadow: 0 0 20px rgba(0, 255, 135, 0.15);
 }
 
 .step-guide-box.step-loser {
-    border-color: var(--gucci-red);
-    background: rgba(200, 16, 46, 0.12);
-    box-shadow: inset 0 0 15px rgba(200, 16, 46, 0.15);
+    border-color: rgba(255, 8, 68, 0.4);
+    background: rgba(255, 8, 68, 0.08);
+    box-shadow: 0 0 20px rgba(255, 8, 68, 0.15);
 }
 
 .step-badge {
+    font-family: var(--font-title);
     font-size: 0.68rem;
-    font-weight: 800;
+    font-weight: 700;
     padding: 3px 8px;
-    border-radius: 4px;
-    background: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%);
-    color: #000;
-    letter-spacing: 1px;
-    text-transform: uppercase;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #00f2fe 0%, #7f00ff 100%);
+    color: #fff;
+    letter-spacing: 0.5px;
 }
 
 .step-title {
     font-size: 0.95rem;
     font-weight: 700;
     margin: 0;
-    letter-spacing: 0.3px;
 }
 
 /* Player Tiles Grid */
@@ -361,7 +361,7 @@ body {
 .player-tile {
     padding: 12px 6px;
     border-radius: var(--radius-md);
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--border-color);
     text-align: center;
     cursor: pointer;
@@ -374,8 +374,8 @@ body {
 }
 
 .player-tile:hover {
-    background: rgba(212, 175, 55, 0.06);
-    border-color: var(--border-gold-hover);
+    background: rgba(0, 242, 254, 0.08);
+    border-color: var(--web3-cyan);
     transform: translateY(-2px);
 }
 
@@ -384,22 +384,21 @@ body {
 }
 
 .player-tile.selected-winner {
-    background: linear-gradient(135deg, rgba(0, 107, 63, 0.35) 0%, rgba(0, 107, 63, 0.15) 100%);
-    border-color: var(--gucci-green-bright);
-    box-shadow: 0 0 20px rgba(0, 107, 63, 0.35);
+    background: linear-gradient(135deg, rgba(0, 255, 135, 0.3) 0%, rgba(0, 242, 254, 0.15) 100%);
+    border-color: var(--web3-emerald);
+    box-shadow: 0 0 20px rgba(0, 255, 135, 0.35);
 }
 
 .player-tile.selected-loser {
-    background: linear-gradient(135deg, rgba(200, 16, 46, 0.35) 0%, rgba(200, 16, 46, 0.15) 100%);
-    border-color: var(--gucci-red-bright);
-    box-shadow: 0 0 20px rgba(200, 16, 46, 0.35);
+    background: linear-gradient(135deg, rgba(255, 8, 68, 0.3) 0%, rgba(255, 177, 153, 0.15) 100%);
+    border-color: var(--web3-rose);
+    box-shadow: 0 0 20px rgba(255, 8, 68, 0.35);
 }
 
 .tile-name {
     font-size: 0.9rem;
     font-weight: 700;
     color: var(--text-main);
-    letter-spacing: 0.3px;
 }
 
 /* Penalty List Items */
@@ -416,14 +415,14 @@ body {
 }
 
 .penalty-card-item:hover {
-    border-color: var(--border-gold-hover);
-    background: rgba(212, 175, 55, 0.03);
+    border-color: var(--border-hover);
+    background: rgba(0, 242, 254, 0.04);
 }
 
 .penalty-card-item.leader {
-    border-color: var(--gucci-gold);
-    background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(18, 18, 22, 0.6) 100%);
-    box-shadow: 0 0 15px rgba(212, 175, 55, 0.12);
+    border-color: rgba(255, 183, 3, 0.4);
+    background: linear-gradient(135deg, rgba(255, 183, 3, 0.1) 0%, rgba(15, 18, 35, 0.6) 100%);
+    box-shadow: 0 0 20px rgba(255, 183, 3, 0.15);
 }
 
 .player-info {
@@ -436,23 +435,21 @@ body {
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #2a2517 0%, #15130d 100%);
-    color: var(--gucci-gold);
+    background: linear-gradient(135deg, #7f00ff 0%, #00f2fe 100%);
+    color: #ffffff;
     font-family: var(--font-title);
     font-weight: 800;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 0.9rem;
-    border: 1px solid var(--gucci-gold);
-    box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+    box-shadow: 0 0 12px rgba(0, 242, 254, 0.3);
 }
 
 .player-name-text {
     font-size: 0.92rem;
     font-weight: 700;
     color: var(--text-main);
-    letter-spacing: 0.3px;
 }
 
 .penalty-controls {
@@ -466,9 +463,10 @@ body {
 }
 
 .shuttle-count-val {
+    font-family: var(--font-title);
     font-size: 0.92rem;
-    font-weight: 800;
-    color: var(--gucci-gold-light);
+    font-weight: 700;
+    color: var(--web3-cyan);
 }
 
 .player-money-val {
@@ -480,62 +478,61 @@ body {
 .btn-pay-qr {
     padding: 7px 14px;
     border-radius: var(--radius-md);
-    border: 1px solid var(--border-gold);
-    background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(20, 20, 26, 0.8) 100%);
-    color: var(--gucci-gold-light);
+    border: 1px solid var(--border-cyan);
+    background: linear-gradient(135deg, rgba(0, 242, 254, 0.15) 0%, rgba(127, 0, 255, 0.15) 100%);
+    color: var(--web3-cyan);
+    font-family: var(--font-title);
     font-size: 0.78rem;
     font-weight: 700;
-    letter-spacing: 0.5px;
     cursor: pointer;
     transition: all 0.25s ease;
 }
 
 .btn-pay-qr:hover {
-    background: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%);
-    color: #000;
-    border-color: #f3e5ab;
-    box-shadow: var(--shadow-gold);
-    transform: translateY(-1px);
+    background: linear-gradient(135deg, #00f2fe 0%, #7f00ff 100%);
+    color: #ffffff;
+    border-color: #00f2fe;
+    box-shadow: var(--shadow-cyan-glow);
+    transform: translateY(-2px);
 }
 
 /* Generic Buttons & Modals */
 .btn {
     padding: 10px 16px;
     border-radius: var(--radius-md);
-    border: 1px solid var(--border-gold);
-    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.05);
     color: var(--text-main);
     font-size: 0.85rem;
     font-weight: 700;
-    letter-spacing: 0.5px;
     cursor: pointer;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn:hover {
-    background: rgba(212, 175, 55, 0.12);
-    border-color: var(--gucci-gold);
+    background: rgba(0, 242, 254, 0.1);
+    border-color: var(--web3-cyan);
     transform: translateY(-1px);
 }
 
 .btn-dark { background: rgba(255, 255, 255, 0.05); color: #fff; }
 
 .btn-success {
-    background: linear-gradient(135deg, #006b3f 0%, #059669 100%);
+    background: linear-gradient(135deg, #00f2fe 0%, #7f00ff 100%);
     color: #fff;
-    border: 1px solid rgba(16, 185, 129, 0.4);
-    box-shadow: 0 4px 20px rgba(0, 107, 63, 0.4);
+    border: none;
+    box-shadow: var(--shadow-cyan-glow);
 }
 
 .btn-success:hover {
-    box-shadow: 0 6px 25px rgba(16, 185, 129, 0.6);
+    box-shadow: 0 0 30px rgba(0, 242, 254, 0.6);
 }
 
 .btn-danger {
-    background: linear-gradient(135deg, #c8102e 0%, #e11d48 100%);
+    background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%);
     color: #fff;
-    border: 1px solid rgba(244, 63, 94, 0.4);
-    box-shadow: 0 4px 20px rgba(200, 16, 46, 0.4);
+    border: none;
+    box-shadow: 0 4px 20px rgba(255, 8, 68, 0.4);
 }
 
 .btn-block { width: 100%; display: block; text-align: center; }
@@ -544,9 +541,9 @@ body {
 .modal-backdrop {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: rgba(3, 5, 12, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     display: none;
     align-items: center;
     justify-content: center;
@@ -559,13 +556,13 @@ body {
 }
 
 .modal-content {
-    background: #121216;
-    border: 1px solid var(--border-gold);
+    background: #0d1021;
+    border: 1px solid var(--border-cyan);
     border-radius: var(--radius-lg);
     width: 100%;
     max-width: 480px;
     padding: 24px;
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(212, 175, 55, 0.1);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 242, 254, 0.15);
 }
 
 .modal-header {
@@ -573,16 +570,15 @@ body {
     align-items: center;
     justify-content: space-between;
     margin-bottom: 16px;
-    border-bottom: 1px solid var(--border-gold);
+    border-bottom: 1px solid var(--border-cyan);
     padding-bottom: 12px;
 }
 
 .modal-header h3 {
     font-family: var(--font-title);
     font-size: 1.1rem;
-    font-weight: 800;
-    letter-spacing: 1px;
-    color: var(--gucci-gold-light);
+    font-weight: 700;
+    color: var(--web3-cyan);
 }
 
 .btn-close {
@@ -595,7 +591,7 @@ body {
 }
 
 .btn-close:hover {
-    color: var(--gucci-gold);
+    color: var(--web3-cyan);
 }
 
 .form-group {
@@ -608,14 +604,13 @@ body {
     font-size: 0.82rem;
     color: var(--text-muted);
     font-weight: 700;
-    letter-spacing: 0.3px;
 }
 
 .form-control {
     padding: 11px 14px;
     border-radius: var(--radius-md);
     background: rgba(0, 0, 0, 0.4);
-    border: 1px solid var(--border-gold);
+    border: 1px solid var(--border-cyan);
     color: #fff;
     font-size: 0.88rem;
     font-family: var(--font-main);
@@ -624,8 +619,8 @@ body {
 
 .form-control:focus {
     outline: none;
-    border-color: var(--gucci-gold);
-    box-shadow: 0 0 16px rgba(212, 175, 55, 0.25);
+    border-color: var(--web3-cyan);
+    box-shadow: 0 0 20px rgba(0, 242, 254, 0.3);
 }
 
 .toast-container {
@@ -637,18 +632,18 @@ body {
 }
 
 .toast {
-    background: linear-gradient(135deg, #1a1a20 0%, #121216 100%);
-    border: 1px solid var(--gucci-gold);
-    color: var(--gucci-gold-light);
+    background: linear-gradient(135deg, #151a33 0%, #0d1021 100%);
+    border: 1px solid var(--web3-cyan);
+    color: #ffffff;
     padding: 12px 24px;
     border-radius: 30px;
+    font-family: var(--font-title);
     font-size: 0.86rem;
     font-weight: 700;
-    letter-spacing: 0.5px;
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 15px rgba(212, 175, 55, 0.2);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 25px rgba(0, 242, 254, 0.3);
 }
 
-/* VietQR Luxury Modal Styles */
+/* VietQR Web3 Modal Styles */
 .payment-modal-content {
     max-width: 420px;
 }
@@ -663,12 +658,12 @@ body {
 .qr-code-wrapper {
     background: #ffffff;
     padding: 14px;
-    border-radius: 18px;
+    border-radius: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7), 0 0 20px rgba(212, 175, 55, 0.3);
-    border: 2px solid var(--gucci-gold);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 242, 254, 0.4);
+    border: 2px solid var(--web3-cyan);
     min-height: 220px;
     width: 220px;
 }
@@ -677,14 +672,14 @@ body {
     width: 192px;
     height: 192px;
     object-fit: contain;
-    border-radius: 8px;
+    border-radius: 10px;
     display: block;
 }
 
 .payment-details-box {
     width: 100%;
     background: rgba(0, 0, 0, 0.4);
-    border: 1px solid var(--border-gold);
+    border: 1px solid var(--border-cyan);
     border-radius: var(--radius-md);
     padding: 16px;
     display: flex;
@@ -712,28 +707,24 @@ body {
 .pay-val-highlight {
     font-size: 1.2rem;
     font-weight: 800;
-    color: var(--gucci-red-bright);
+    color: var(--web3-rose);
 }
 
 .pay-val-copy {
     font-weight: 800;
-    color: var(--gucci-gold-light);
+    color: var(--web3-cyan);
 }
 
 .btn-copy {
     font-size: 0.72rem;
     padding: 3px 10px;
-    border-radius: 4px;
-    background: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%);
+    border-radius: 6px;
+    background: linear-gradient(135deg, #00f2fe 0%, #7f00ff 100%);
     border: none;
-    color: #000;
+    color: #ffffff;
     cursor: pointer;
     margin-left: 6px;
     font-weight: 800;
-}
-
-.btn-copy:active {
-    opacity: 0.8;
 }
 
 .payment-actions {

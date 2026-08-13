@@ -715,7 +715,7 @@ body {
                         </div>
                         <div class="form-group" style="margin-top: 10px;">
                             <label for="inputShuttleBoxPrice">Giá 1 hộp cầu (đ):</label>
-                            <input type="number" id="inputShuttleBoxPrice" value="260000" step="1000" min="0" class="form-control" style="margin-top: 4px;">
+                            <input type="number" id="inputShuttleBoxPrice" value="305000" step="1000" min="0" class="form-control" style="margin-top: 4px;">
                         </div>
 
                         <div class="form-group" style="margin-top: 12px; border-top: 1px dashed var(--border-color); padding-top: 10px;">
@@ -1043,7 +1043,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- State ---
     let currentMode = '2v2'; // '2v2' or '1v1'
     let shuttlePrice = parseInt(localStorage.getItem('badminton_shuttle_price') || '26000');
-    let shuttleBoxPrice = parseInt(localStorage.getItem('badminton_shuttle_box_price') || '260000');
+    let shuttleBoxPrice = parseInt(localStorage.getItem('badminton_shuttle_box_price') || '305000');
     let bankConfig = JSON.parse(localStorage.getItem('badminton_bank_config') || '{"bankId":"MB","accountNo":"","accountName":"","sepayToken":""}');
     let registeredPlayers = JSON.parse(localStorage.getItem('badminton_players') || '["Toàn", "Tú", "Tiến"]');
     let playerPenalties = JSON.parse(localStorage.getItem('badminton_penalties') || '{}');
@@ -1585,17 +1585,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const boxes = parseFloat(inputStr);
             if (isNaN(boxes) || boxes <= 0) return;
 
-            const boxPrice = shuttleBoxPrice || 260000;
-            const perShuttlePrice = shuttlePrice || 26000;
+            const boxPrice = shuttleBoxPrice || 305000;
+            const shuttlesPerBox = 12; // 1 hộp = 12 quả cầu tròn
+            const equivalentShuttles = boxes * shuttlesPerBox;
             const totalDeductedMoney = boxes * boxPrice;
-            const equivalentShuttles = totalDeductedMoney / perShuttlePrice;
 
             playerPenalties[playerName] = (playerPenalties[playerName] || 0) - equivalentShuttles;
 
             const historyItem = {
                 mode: 'buy_shuttle',
                 winners: playerName,
-                losers: `Mua ${boxes} hộp cầu`,
+                losers: `Mua ${boxes} hộp cầu (${equivalentShuttles} quả)`,
                 penalty: -equivalentShuttles,
                 money: -totalDeductedMoney,
                 time: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
@@ -1608,7 +1608,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             renderLeaderboard();
             soundEngine.playSuccessSound();
-            showToast(`📦 GHI NHẬN: ${playerName} mua ${boxes} hộp cầu (-${formatMoney(totalDeductedMoney)})`);
+            showToast(`📦 GHI NHẬN: ${playerName} mua ${boxes} hộp cầu (-${equivalentShuttles} quả / -${formatMoney(totalDeductedMoney)})`);
         });
     }
 

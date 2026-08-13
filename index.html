@@ -1162,17 +1162,39 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.supabaseKey.value = SupabaseService.getKey();
     }
 
-    // --- Admin Authentication Engine ---
-    function requireAdmin(callback) {
+    function extractAdminPin(appSettings) {
+        if (!appSettings) return null;
+        if (appSettings.admin_pin) return String(appSettings.admin_pin).trim();
+        let cfg = appSettings.bank_config;
+        if (typeof cfg === 'string') {
+            try { cfg = JSON.parse(cfg); } catch (e) { cfg = null; }
+        }
+        if (cfg && (cfg.adminPin || cfg.admin_pin)) {
+            return String(cfg.adminPin || cfg.admin_pin).trim();
+        }
+        return null;
+    }
+
+    async function requireAdmin(callback) {
         if (isAdmin) {
             if (callback) callback();
-        } else {
-            pendingAdminAction = callback || null;
-            elements.adminPinInput.value = '';
-            elements.pinErrorMsg.style.display = 'none';
-            elements.adminPinModal.classList.add('active');
-            setTimeout(() => elements.adminPinInput.focus(), 150);
+            return;
         }
+
+        if (window.SupabaseService && SupabaseService.isConfigured()) {
+            const freshSettings = await SupabaseService.fetchAppSettings();
+            const cloudPin = extractAdminPin(freshSettings);
+            if (cloudPin) {
+                adminPin = cloudPin;
+                localStorage.setItem('badminton_admin_pin', adminPin);
+            }
+        }
+
+        pendingAdminAction = callback || null;
+        elements.adminPinInput.value = '';
+        elements.pinErrorMsg.style.display = 'none';
+        elements.adminPinModal.classList.add('active');
+        setTimeout(() => elements.adminPinInput.focus(), 150);
     }
 
     function updateAdminUI() {
@@ -1245,19 +1267,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 shuttlePrice = appSettings.shuttle_price;
                 elements.inputShuttlePrice.value = shuttlePrice;
             }
-            if (appSettings.admin_pin) {
-                adminPin = appSettings.admin_pin;
+            const cloudPin = extractAdminPin(appSettings);
+            if (cloudPin) {
+                adminPin = cloudPin;
                 localStorage.setItem('badminton_admin_pin', adminPin);
             }
             if (appSettings.bank_config) {
-                bankConfig = appSettings.bank_config;
+                bankConfig = typeof appSettings.bank_config === 'string' ? JSON.parse(appSettings.bank_config) : appSettings.bank_config;
                 elements.bankSelect.value = bankConfig.bankId || 'MB';
                 elements.bankAccNo.value = bankConfig.accountNo || '';
                 elements.bankAccName.value = bankConfig.accountName || '';
-                if (bankConfig.adminPin) {
-                    adminPin = bankConfig.adminPin;
-                    localStorage.setItem('badminton_admin_pin', adminPin);
-                }
             }
         }
 
@@ -1697,8 +1716,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Always fetch fresh PIN from Supabase Cloud to ensure cross-device accuracy
         if (window.SupabaseService && SupabaseService.isConfigured()) {
             const freshSettings = await SupabaseService.fetchAppSettings();
-            if (freshSettings && freshSettings.bank_config && freshSettings.bank_config.adminPin) {
-                adminPin = freshSettings.bank_config.adminPin;
+            const cloudPin = extractAdminPin(freshSettings);
+            if (cloudPin) {
+                adminPin = cloudPin;
                 localStorage.setItem('badminton_admin_pin', adminPin);
             }
         }

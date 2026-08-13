@@ -1773,7 +1773,7 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.paymentModal.classList.add('active');
     }
 
-    function shareMessengerAllDebts() {
+    async function shareMessengerAllDebts() {
         const debtorList = [];
         let totalAllShuttles = 0;
         let totalAllMoney = 0;
@@ -1795,9 +1795,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         debtorList.sort((a, b) => b.count - a.count);
 
-        const bankInfo = BANK_MAPPING[bankConfig.bankId || 'MB'] || BANK_MAPPING['MB'];
+        const bankId = bankConfig.bankId || 'MB';
+        const bankInfo = BANK_MAPPING[bankId] || BANK_MAPPING['MB'];
         const accountNo = bankConfig.accountNo || '---';
         const accountName = bankConfig.accountName || '';
+        const memo = "CAULONG";
+
+        // Dynamic VietQR image URL
+        const qrUrl = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.png?amount=${totalAllMoney}&addInfo=${encodeURIComponent(memo)}${accountName ? `&accountName=${encodeURIComponent(accountName)}` : ''}`;
 
         let shareText = `🏸 [DANH SÁCH TỔNG NỢ CẦU - CẦU LÔNG ĐỀN CẦU]\n\n`;
         debtorList.forEach((item, i) => {
@@ -1810,19 +1815,40 @@ document.addEventListener('DOMContentLoaded', () => {
         shareText += `- STK: ${accountNo}\n`;
         if (accountName) shareText += `- Chủ TK: ${accountName}\n`;
         shareText += `- Nội dung CK: CAULONG [Tên_bạn]\n\n`;
-        shareText += `Nhờ anh em chuyển khoản thanh toán nhé! Cảm ơn cả nhà! 🏸✨`;
+        shareText += `🖼️ MÃ QR CHUYỂN KHOẢN NHANH:\n${qrUrl}\n\n`;
+        shareText += `Nhờ anh em quét mã QR hoặc chuyển khoản thanh toán nhé! Cảm ơn cả nhà! 🏸✨`;
 
-        if (navigator.share) {
-            navigator.share({
-                title: `Danh Sách Tổng Nợ Cầu Lông`,
-                text: shareText
-            }).catch(err => console.log("Share API closed:", err));
-        } else {
-            navigator.clipboard.writeText(shareText).then(() => {
-                showToast("📋 Đã copy Danh Sách Nợ! Mở Messenger để dán (Ctrl+V) gửi nhóm.");
-                window.open("https://m.me/", "_blank");
-            });
+        // Try attaching the QR code image file directly via Web Share API if supported
+        try {
+            if (navigator.share) {
+                const res = await fetch(qrUrl);
+                const blob = await res.blob();
+                const file = new File([blob], `VietQR_Caulong_${Date.now()}.png`, { type: 'image/png' });
+
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        title: `Danh Sách Tổng Nợ & Mã QR Cầu Lông`,
+                        text: shareText,
+                        files: [file]
+                    });
+                    return;
+                }
+
+                await navigator.share({
+                    title: `Danh Sách Tổng Nợ & Mã QR Cầu Lông`,
+                    text: shareText
+                });
+                return;
+            }
+        } catch (err) {
+            console.log("File share fallback:", err);
         }
+
+        // Desktop / Clipboard Fallback
+        navigator.clipboard.writeText(shareText).then(() => {
+            showToast("📋 Đã copy Danh Sách Nợ kèm Link Mã QR! Mở Messenger để dán (Ctrl+V) gửi nhóm.");
+            window.open("https://m.me/", "_blank");
+        });
     }
 
     function markPlayerAsPaid(playerName) {

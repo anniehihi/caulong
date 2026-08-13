@@ -1774,6 +1774,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showToast(message) {
+        if (!elements.toastContainer) return;
+        elements.toastContainer.innerHTML = ''; // Ensure only 1 toast line is visible at any time
         const toast = document.createElement('div');
         toast.className = 'toast';
         toast.textContent = message;
@@ -1782,7 +1784,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             toast.style.opacity = '0';
             setTimeout(() => toast.remove(), 300);
-        }, 3000);
+        }, 2500);
     }
 
     function updateSupabaseStatusUI() {
@@ -1810,8 +1812,6 @@ document.addEventListener('DOMContentLoaded', () => {
     async function initSupabaseDataSync() {
         updateSupabaseStatusUI();
         if (!window.SupabaseService || !SupabaseService.isConfigured()) return;
-
-        showToast("☁️ Đang đồng bộ dữ liệu từ Supabase Cloud...");
 
         // 1. Fetch App Settings
         const appSettings = await SupabaseService.fetchAppSettings();

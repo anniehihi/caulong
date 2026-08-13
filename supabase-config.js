@@ -54,6 +54,17 @@
             return supabaseClient;
         },
 
+        handleError(actionName, error) {
+            if (!error) return;
+            console.error(`❌ Supabase ${actionName} error:`, error);
+            if (error.code === '42501' || (error.message && error.message.includes('row-level security'))) {
+                console.warn("⚠️ CẢNH BÁO RLS: Supabase đang bật Row Level Security. Vui lòng mở SQL Editor trên Supabase Dashboard và chạy lệnh DISABLE ROW LEVEL SECURITY.");
+                if (typeof window.showToast === 'function') {
+                    window.showToast("⚠️ Supabase bị chặn RLS! Mở 'Cài STK & Supabase' -> 'Lấy SQL Script' để mở quyền.");
+                }
+            }
+        },
+
         // --- Data API Methods ---
 
         async fetchAppSettings() {
@@ -67,7 +78,7 @@
                     .maybeSingle();
 
                 if (error) {
-                    console.warn("Supabase fetchAppSettings warning:", error.message);
+                    this.handleError("fetchAppSettings", error);
                     return null;
                 }
                 return data;
@@ -90,7 +101,7 @@
                         updated_at: new Date().toISOString()
                     });
 
-                if (error) console.error("Supabase saveAppSettings error:", error.message);
+                if (error) this.handleError("saveAppSettings", error);
                 return !error;
             } catch (err) {
                 console.error("Supabase saveAppSettings error:", err);
@@ -108,7 +119,7 @@
                     .order('created_at', { ascending: true });
 
                 if (error) {
-                    console.warn("Supabase fetchPlayers warning:", error.message);
+                    this.handleError("fetchPlayers", error);
                     return null;
                 }
                 return data;
@@ -129,7 +140,7 @@
                         { onConflict: 'name' }
                     );
 
-                if (error) console.error("Supabase savePlayer error:", error.message);
+                if (error) this.handleError("savePlayer", error);
                 return !error;
             } catch (err) {
                 console.error("Supabase savePlayer error:", err);
@@ -146,7 +157,7 @@
                     .delete()
                     .eq('name', name);
 
-                if (error) console.error("Supabase deletePlayer error:", error.message);
+                if (error) this.handleError("deletePlayer", error);
                 return !error;
             } catch (err) {
                 console.error("Supabase deletePlayer error:", err);
@@ -165,7 +176,7 @@
                     .limit(50);
 
                 if (error) {
-                    console.warn("Supabase fetchMatchHistory warning:", error.message);
+                    this.handleError("fetchMatchHistory", error);
                     return null;
                 }
                 return data;
@@ -190,7 +201,7 @@
                         created_at: new Date().toISOString()
                     }]);
 
-                if (error) console.error("Supabase addMatchHistory error:", error.message);
+                if (error) this.handleError("addMatchHistory", error);
                 return !error;
             } catch (err) {
                 console.error("Supabase addMatchHistory error:", err);

@@ -1208,7 +1208,7 @@ body {
                     <div class="player-selection-section">
                         <div class="section-title-row">
                             <span>DANH SÁCH Ô NGƯỜI CHƠI (BẤM VÀO TÊN)</span>
-                            <button class="btn-text" id="btnAddPlayerBtn">+ Thêm người chơi</button>
+                            <button class="btn-text" id="btnAddPlayerBtn">⚙️ Quản lý người chơi</button>
                         </div>
 
                         <div class="player-tiles-grid" id="playerTilesGrid">
@@ -1457,23 +1457,35 @@ ALTER PUBLICATION supabase_realtime ADD TABLE app_settings, players, match_histo
             </div>
         </div>
 
-        <!-- Add Player Modal -->
+        <!-- Add & Manage Players Modal -->
         <div class="modal-backdrop" id="addPlayerModal">
-            <div class="modal-content small-modal">
+            <div class="modal-content">
                 <div class="modal-header">
-                    <h3><i data-lucide="user-plus"></i> Thêm Người Chơi Mới</h3>
+                    <h3><i data-lucide="users"></i> Quản Lý Danh Sách Người Chơi</h3>
                     <button class="btn-close" id="btnCloseAddPlayer"><i data-lucide="x"></i></button>
                 </div>
                 <div class="modal-body">
-                    <form id="addPlayerForm">
+                    <!-- Form Thêm Người Chơi -->
+                    <form id="addPlayerForm" style="margin-bottom: 16px;">
                         <div class="form-group">
-                            <label for="newPlayerName">Tên người chơi:</label>
-                            <input type="text" id="newPlayerName" placeholder="Ví dụ: Hoàng, Linh..." required class="form-control">
-                        </div>
-                        <div class="form-actions" style="margin-top: 14px;">
-                            <button type="submit" class="btn btn-success btn-block">Thêm người chơi</button>
+                            <label for="newPlayerName" style="font-weight: 800; font-size: 0.85rem; color: var(--accent-gold);">+ THÊM NGƯỜI CHƠI MỚI:</label>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" id="newPlayerName" placeholder="Nhập tên người chơi mới..." required class="form-control">
+                                <button type="submit" class="btn btn-success" style="white-space: nowrap; font-weight: 800;">
+                                    <i data-lucide="user-plus"></i> Thêm
+                                </button>
+                            </div>
                         </div>
                     </form>
+
+                    <div style="border-top: 1px dashed var(--border-color); padding-top: 12px;">
+                        <h4 style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px; font-weight: 800;">
+                            DANH SÁCH NGƯỜI CHƠI (BẤM SỬA HOẶC XÓA):
+                        </h4>
+                        <div id="playerManagerList" style="display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto;">
+                            <!-- Rendered dynamically -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1696,10 +1708,11 @@ document.addEventListener('DOMContentLoaded', () => {
         btnDownloadQr: document.getElementById('btnDownloadQr'),
         btnMarkPaid: document.getElementById('btnMarkPaid'),
 
-        // Add Player Modal
+        // Add & Manage Players Modal
         addPlayerModal: document.getElementById('addPlayerModal'),
         addPlayerForm: document.getElementById('addPlayerForm'),
         newPlayerName: document.getElementById('newPlayerName'),
+        playerManagerList: document.getElementById('playerManagerList'),
         btnCloseAddPlayer: document.getElementById('btnCloseAddPlayer'),
 
         // History Modal
@@ -2413,9 +2426,118 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Add Player Modal (Admin Protected)
+    // Player Management Logic (Add, Edit, Delete)
+    function renderPlayerManagerList() {
+        if (!elements.playerManagerList) return;
+        elements.playerManagerList.innerHTML = '';
+
+        if (registeredPlayers.length === 0) {
+            elements.playerManagerList.innerHTML = '<p class="empty-msg">Chưa có người chơi nào.</p>';
+            return;
+        }
+
+        registeredPlayers.forEach(name => {
+            const item = document.createElement('div');
+            item.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); border-radius: 12px;';
+
+            const count = playerPenalties[name] || 0;
+            item.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div class="player-avatar" style="width: 32px; height: 32px; font-size: 0.9rem;">${name.charAt(0).toUpperCase()}</div>
+                    <div>
+                        <strong style="font-size: 0.95rem; color: var(--text-main);">${name}</strong>
+                        <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">${count} quả đền</span>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <button class="btn btn-dark btn-sm btn-edit-player" data-name="${name}" title="Sửa tên">
+                        ✏️ Sửa
+                    </button>
+                    <button class="btn btn-danger btn-sm btn-del-player" data-name="${name}" title="Xóa người chơi">
+                        🗑️ Xóa
+                    </button>
+                </div>
+            `;
+            elements.playerManagerList.appendChild(item);
+        });
+
+        elements.playerManagerList.querySelectorAll('.btn-edit-player').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const name = e.currentTarget.getAttribute('data-name');
+                editPlayer(name);
+            });
+        });
+
+        elements.playerManagerList.querySelectorAll('.btn-del-player').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const name = e.currentTarget.getAttribute('data-name');
+                deletePlayer(name);
+            });
+        });
+    }
+
+    function editPlayer(oldName) {
+        requireAdmin(() => {
+            const newName = prompt(`Nhập tên mới thay thế cho "${oldName}":`, oldName);
+            if (!newName) return;
+            const trimmed = newName.trim();
+            if (!trimmed || trimmed === oldName) return;
+
+            if (registeredPlayers.includes(trimmed)) {
+                showToast(`⚠️ Tên "${trimmed}" đã trùng với người chơi khác!`);
+                return;
+            }
+
+            const index = registeredPlayers.indexOf(oldName);
+            if (index !== -1) {
+                registeredPlayers[index] = trimmed;
+            }
+
+            const count = playerPenalties[oldName] || 0;
+            delete playerPenalties[oldName];
+            playerPenalties[trimmed] = count;
+
+            selectedWinners = selectedWinners.map(n => n === oldName ? trimmed : n);
+            selectedLosers = selectedLosers.map(n => n === oldName ? trimmed : n);
+
+            if (window.SupabaseService && SupabaseService.isConfigured()) {
+                SupabaseService.deletePlayer(oldName);
+                SupabaseService.savePlayer(trimmed, count);
+            }
+
+            saveState();
+            updateSelectionUI();
+            renderLeaderboard();
+            renderPlayerManagerList();
+            showToast(`✏️ Đã đổi tên: "${oldName}" ➔ "${trimmed}"`);
+        });
+    }
+
+    function deletePlayer(name) {
+        requireAdmin(() => {
+            if (confirm(`Bạn có chắc chắn muốn XÓA người chơi "${name}" khỏi hệ thống?`)) {
+                registeredPlayers = registeredPlayers.filter(p => p !== name);
+                delete playerPenalties[name];
+                selectedWinners = selectedWinners.filter(n => n !== name);
+                selectedLosers = selectedLosers.filter(n => n !== name);
+
+                if (window.SupabaseService && SupabaseService.isConfigured()) {
+                    SupabaseService.deletePlayer(name);
+                }
+
+                saveState();
+                updateSelectionUI();
+                renderLeaderboard();
+                renderPlayerManagerList();
+                showToast(`🗑️ Đã xóa người chơi: "${name}"`);
+            }
+        });
+    }
+
+    // Add & Manage Players Modal (Admin Protected)
     elements.btnAddPlayerBtn.addEventListener('click', () => {
         requireAdmin(() => {
+            renderPlayerManagerList();
             elements.addPlayerModal.classList.add('active');
         });
     });
@@ -2425,16 +2547,19 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         if (!isAdmin) return;
         const name = elements.newPlayerName.value.trim();
-        if (name && !registeredPlayers.includes(name)) {
-            registeredPlayers.push(name);
-            playerPenalties[name] = 0;
-            saveState();
-            updateSelectionUI();
-            renderLeaderboard();
-            elements.newPlayerName.value = '';
-            elements.addPlayerModal.classList.remove('active');
-            showToast(`Đã thêm người chơi: ${name}`);
+        if (!name) return;
+        if (registeredPlayers.includes(name)) {
+            showToast(`⚠️ Người chơi "${name}" đã có trong danh sách!`);
+            return;
         }
+        registeredPlayers.push(name);
+        playerPenalties[name] = 0;
+        saveState();
+        updateSelectionUI();
+        renderLeaderboard();
+        renderPlayerManagerList();
+        elements.newPlayerName.value = '';
+        showToast(`🎉 Đã thêm người chơi: ${name}`);
     });
 
     // History Modal

@@ -713,6 +713,10 @@ body {
                             <label for="inputShuttlePrice">Giá 1 quả cầu (đ):</label>
                             <input type="number" id="inputShuttlePrice" value="26000" step="1000" min="0" class="form-control" style="margin-top: 4px;">
                         </div>
+                        <div class="form-group" style="margin-top: 10px;">
+                            <label for="inputShuttleBoxPrice">Giá 1 hộp cầu (đ):</label>
+                            <input type="number" id="inputShuttleBoxPrice" value="260000" step="10000" min="0" class="form-control" style="margin-top: 4px;">
+                        </div>
 
                         <div class="form-group" style="margin-top: 12px; border-top: 1px dashed var(--border-color); padding-top: 10px;">
                             <label for="bankSelect">Ngân hàng nhận tiền thanh toán:</label>
@@ -1039,6 +1043,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- State ---
     let currentMode = '2v2'; // '2v2' or '1v1'
     let shuttlePrice = parseInt(localStorage.getItem('badminton_shuttle_price') || '26000');
+    let shuttleBoxPrice = parseInt(localStorage.getItem('badminton_shuttle_box_price') || '260000');
     let bankConfig = JSON.parse(localStorage.getItem('badminton_bank_config') || '{"bankId":"MB","accountNo":"","accountName":"","sepayToken":""}');
     let registeredPlayers = JSON.parse(localStorage.getItem('badminton_players') || '["Toàn", "Tú", "Tiến"]');
     let playerPenalties = JSON.parse(localStorage.getItem('badminton_penalties') || '{}');
@@ -1059,6 +1064,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- DOM Elements ---
     const elements = {
         inputShuttlePrice: document.getElementById('inputShuttlePrice'),
+        inputShuttleBoxPrice: document.getElementById('inputShuttleBoxPrice'),
         btnBankSettings: document.getElementById('btnBankSettings'),
         btnMode1v1: document.getElementById('btnMode1v1'),
         btnMode2v2: document.getElementById('btnMode2v2'),
@@ -1277,6 +1283,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 elements.bankSelect.value = bankConfig.bankId || 'MB';
                 elements.bankAccNo.value = bankConfig.accountNo || '';
                 elements.bankAccName.value = bankConfig.accountName || '';
+                if (bankConfig.shuttleBoxPrice) {
+                    shuttleBoxPrice = bankConfig.shuttleBoxPrice;
+                    if (elements.inputShuttleBoxPrice) elements.inputShuttleBoxPrice.value = shuttleBoxPrice;
+                }
             }
         }
 
@@ -1307,6 +1317,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Save local backup
         localStorage.setItem('badminton_shuttle_price', shuttlePrice.toString());
+        localStorage.setItem('badminton_shuttle_box_price', shuttleBoxPrice.toString());
         localStorage.setItem('badminton_bank_config', JSON.stringify(bankConfig));
         localStorage.setItem('badminton_players', JSON.stringify(registeredPlayers));
         localStorage.setItem('badminton_penalties', JSON.stringify(playerPenalties));
@@ -1350,8 +1361,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const freshSettings = await SupabaseService.fetchAppSettings();
                 if (freshSettings) {
                     if (freshSettings.shuttle_price) shuttlePrice = freshSettings.shuttle_price;
-                    if (freshSettings.bank_config) bankConfig = freshSettings.bank_config;
+                    if (freshSettings.bank_config) {
+                        bankConfig = typeof freshSettings.bank_config === 'string' ? JSON.parse(freshSettings.bank_config) : freshSettings.bank_config;
+                        if (bankConfig.shuttleBoxPrice) shuttleBoxPrice = bankConfig.shuttleBoxPrice;
+                    }
                     elements.inputShuttlePrice.value = shuttlePrice;
+                    if (elements.inputShuttleBoxPrice) elements.inputShuttleBoxPrice.value = shuttleBoxPrice;
                     renderLeaderboard();
                 }
             }
@@ -1359,7 +1374,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function saveState() {
+        bankConfig.shuttleBoxPrice = shuttleBoxPrice;
         localStorage.setItem('badminton_shuttle_price', shuttlePrice.toString());
+        localStorage.setItem('badminton_shuttle_box_price', shuttleBoxPrice.toString());
         localStorage.setItem('badminton_bank_config', JSON.stringify(bankConfig));
         localStorage.setItem('badminton_players', JSON.stringify(registeredPlayers));
         localStorage.setItem('badminton_penalties', JSON.stringify(playerPenalties));
@@ -1561,6 +1578,38 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast(`🎉 XÁC NHẬN: ${playerName} đã thanh toán hết nợ!`);
     }
 
+    function handleBuyShuttle(playerName) {
+        const inputStr = prompt(`Nhập số hộp cầu mà "${playerName}" đã mua:`, "1");
+        if (!inputStr) return;
+        const boxes = parseFloat(inputStr);
+        if (isNaN(boxes) || boxes <= 0) return;
+
+        const boxPrice = shuttleBoxPrice || 260000;
+        const perShuttlePrice = shuttlePrice || 26000;
+        const totalDeductedMoney = boxes * boxPrice;
+        const equivalentShuttles = totalDeductedMoney / perShuttlePrice;
+
+        playerPenalties[playerName] = (playerPenalties[playerName] || 0) - equivalentShuttles;
+
+        const historyItem = {
+            mode: 'buy_shuttle',
+            winners: playerName,
+            losers: `Mua ${boxes} hộp cầu`,
+            penalty: -equivalentShuttles,
+            money: -totalDeductedMoney,
+            time: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+        };
+        historyLog.unshift(historyItem);
+
+        saveState();
+        if (window.SupabaseService && SupabaseService.isConfigured()) {
+            SupabaseService.addMatchHistory(historyItem);
+        }
+        renderLeaderboard();
+        soundEngine.playSuccessSound();
+        showToast(`📦 GHI NHẬN: ${playerName} mua ${boxes} hộp cầu (-${formatMoney(totalDeductedMoney)})`);
+    }
+
     // --- Render Leaderboard ---
     function renderLeaderboard() {
         registeredPlayers.forEach(name => {
@@ -1582,6 +1631,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const moneyOwed = count * shuttlePrice;
             const isLeader = index === 0 && count > 0;
 
+            let moneyDisplay = formatMoney(moneyOwed);
+            if (moneyOwed < 0) {
+                moneyDisplay = `-${formatMoney(Math.abs(moneyOwed))} (Quỹ trả lại)`;
+            }
+
             const card = document.createElement('div');
             card.className = `penalty-card-item ${isLeader ? 'leader' : ''}`;
             card.innerHTML = `
@@ -1595,8 +1649,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="shuttle-count-val">
                             <span>${count}</span> <span style="font-size:1.2rem;">🏸</span>
                         </div>
-                        <div class="player-money-val">${formatMoney(moneyOwed)}</div>
+                        <div class="player-money-val" style="${moneyOwed < 0 ? 'color: var(--accent-emerald); font-weight:700;' : ''}">${moneyDisplay}</div>
                     </div>
+
+                    <button class="btn-pay-qr btn-buy-shuttle" data-buy-name="${name}" style="background: #27272a; border-color: var(--border-color); color: var(--text-main);" title="Ghi nhận mua hộp cầu cho sân">
+                        📦 Mua Cầu
+                    </button>
 
                     ${moneyOwed > 0 ? `
                         <button class="btn-pay-qr" data-pay-name="${name}">
@@ -1619,11 +1677,18 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.totalShuttlesBadge.textContent = `${grandTotalShuttles} quả`;
         elements.totalMoneyBadge.textContent = `${formatMoney(grandTotalMoney)}`;
 
-        // Register Pay QR button events
-        document.querySelectorAll('.btn-pay-qr').forEach(btn => {
+        // Register Pay QR & Buy Shuttle button events
+        document.querySelectorAll('.btn-pay-qr:not(.btn-buy-shuttle)').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const name = e.target.getAttribute('data-pay-name');
                 openPaymentModal(name);
+            });
+        });
+
+        document.querySelectorAll('.btn-buy-shuttle').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const name = e.target.getAttribute('data-buy-name');
+                handleBuyShuttle(name);
             });
         });
 
@@ -1825,6 +1890,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const priceVal = parseInt(elements.inputShuttlePrice.value);
         if (!isNaN(priceVal) && priceVal >= 0) {
             shuttlePrice = priceVal;
+        }
+
+        const boxPriceVal = parseInt(elements.inputShuttleBoxPrice.value);
+        if (!isNaN(boxPriceVal) && boxPriceVal >= 0) {
+            shuttleBoxPrice = boxPriceVal;
+            bankConfig.shuttleBoxPrice = shuttleBoxPrice;
         }
 
         bankConfig.bankId = elements.bankSelect.value;

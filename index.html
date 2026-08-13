@@ -822,8 +822,13 @@ body {
             <!-- Right Panel: Penalty & Money Leaderboard -->
             <section class="leaderboard-panel">
                 <div class="panel-card">
-                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                        <h3 style="margin: 0; font-size: 1rem; font-weight: 800;"><i data-lucide="flame"></i> BẢNG NỢ CẦU</h3>
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <h3 style="margin: 0; font-size: 1rem; font-weight: 800;"><i data-lucide="flame"></i> BẢNG NỢ CẦU</h3>
+                            <button class="btn btn-sm" id="btnShareMessenger" style="background: linear-gradient(135deg, #0084ff 0%, #00c6ff 100%); color: #fff; font-weight: 700; border: none; padding: 4px 10px; border-radius: 6px; font-size: 0.76rem;" title="Gửi danh sách tổng nợ tất cả người chưa thanh toán qua Facebook Messenger">
+                                💬 Remind Messenger
+                            </button>
+                        </div>
                         <div class="total-summary-badges" style="display: flex; gap: 6px;">
                             <span class="total-shuttles-badge" id="totalShuttlesBadge" style="font-size: 0.8rem; padding: 3px 8px; border-radius: 10px; background: rgba(255, 183, 3, 0.15); color: var(--accent-gold); font-weight: 800;">0 quả</span>
                             <span class="total-money-badge" id="totalMoneyBadge" style="font-size: 0.8rem; padding: 3px 8px; border-radius: 10px; background: rgba(0, 230, 118, 0.15); color: var(--accent-emerald); font-weight: 800;">0đ</span>
@@ -1067,8 +1072,8 @@ ALTER PUBLICATION supabase_realtime ADD TABLE app_settings, players, match_histo
                     </div>
 
                     <div class="payment-actions">
-                        <button id="btnShareZaloModal" class="btn btn-block" style="background: linear-gradient(135deg, #0068ff 0%, #004fb9 100%); color: #fff; font-weight: 700;">
-                            <i data-lucide="share-2"></i> 📲 GỬI HÓA ĐƠN & Mã QR QUA ZALO
+                        <button id="btnShareMessengerModal" class="btn btn-block" style="background: linear-gradient(135deg, #0084ff 0%, #00c6ff 100%); color: #fff; font-weight: 700;">
+                            <i data-lucide="share-2"></i> 💬 GỬI DANH SÁCH TỔNG NỢ LÊN MESSENGER
                         </button>
 
                         <button id="btnDownloadQr" class="btn btn-dark btn-block btn-lg" style="margin-top: 6px;">
@@ -1337,7 +1342,8 @@ document.addEventListener('DOMContentLoaded', () => {
         btnCopyMemo: document.getElementById('btnCopyMemo'),
         btnDownloadQr: document.getElementById('btnDownloadQr'),
         btnMarkPaid: document.getElementById('btnMarkPaid'),
-        btnShareZaloModal: document.getElementById('btnShareZaloModal'),
+        btnShareMessengerModal: document.getElementById('btnShareMessengerModal'),
+        btnShareMessenger: document.getElementById('btnShareMessenger'),
 
         // Add & Manage Players Modal
         addPlayerModal: document.getElementById('addPlayerModal'),
@@ -1767,38 +1773,54 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.paymentModal.classList.add('active');
     }
 
-    function shareZaloInvoice(playerName) {
-        const count = playerPenalties[playerName] || 0;
-        if (count <= 0) {
-            showToast(`⚠️ ${playerName} hiện không có nợ cầu.`);
+    function shareMessengerAllDebts() {
+        const debtorList = [];
+        let totalAllShuttles = 0;
+        let totalAllMoney = 0;
+
+        registeredPlayers.forEach(name => {
+            const count = playerPenalties[name] || 0;
+            if (count > 0) {
+                const amount = count * shuttlePrice;
+                debtorList.push({ name, count, amount });
+                totalAllShuttles += count;
+                totalAllMoney += amount;
+            }
+        });
+
+        if (debtorList.length === 0) {
+            showToast("🎉 Tất cả các anh em đã thanh toán hết nợ cầu!");
             return;
         }
-        const amount = count * shuttlePrice;
+
+        debtorList.sort((a, b) => b.count - a.count);
+
+        const bankInfo = BANK_MAPPING[bankConfig.bankId || 'MB'] || BANK_MAPPING['MB'];
         const accountNo = bankConfig.accountNo || '---';
         const accountName = bankConfig.accountName || '';
-        const bankInfo = BANK_MAPPING[bankConfig.bankId || 'MB'] || BANK_MAPPING['MB'];
-        const memo = `CAULONG ${playerName}`;
 
-        const shareText = `🏸 [CẦU LÔNG - ĐỀN CẦU]\n` +
-            `Chào ${playerName}, tổng nợ đền cầu hiện tại của bạn là: ${count} quả (${formatMoney(amount)}).\n\n` +
-            `👉 Chuyển khoản ngân hàng:\n` +
-            `- Ngân hàng: ${bankInfo.name}\n` +
-            `- STK: ${accountNo}\n` +
-            `${accountName ? `- Tên TK: ${accountName}\n` : ''}` +
-            `- Nội dung CK: ${memo}\n\n` +
-            `Cảm ơn bạn! 🏸✨`;
+        let shareText = `🏸 [DANH SÁCH TỔNG NỢ CẦU - CẦU LÔNG ĐỀN CẦU]\n\n`;
+        debtorList.forEach((item, i) => {
+            shareText += `${i + 1}. ${item.name}: ${item.count} quả (${formatMoney(item.amount)})\n`;
+        });
+        shareText += `-------------------------\n`;
+        shareText += `📊 TỔNG CỘNG: ${totalAllShuttles} quả (${formatMoney(totalAllMoney)})\n\n`;
+        shareText += `👉 CHUYỂN KHOẢN NGÂN HÀNG:\n`;
+        shareText += `- Ngân hàng: ${bankInfo.name}\n`;
+        shareText += `- STK: ${accountNo}\n`;
+        if (accountName) shareText += `- Chủ TK: ${accountName}\n`;
+        shareText += `- Nội dung CK: CAULONG [Tên_bạn]\n\n`;
+        shareText += `Nhờ anh em chuyển khoản thanh toán nhé! Cảm ơn cả nhà! 🏸✨`;
 
         if (navigator.share) {
             navigator.share({
-                title: `Hóa đơn đền cầu - ${playerName}`,
+                title: `Danh Sách Tổng Nợ Cầu Lông`,
                 text: shareText
-            }).catch(err => {
-                console.log("Share API closed:", err);
-            });
+            }).catch(err => console.log("Share API closed:", err));
         } else {
             navigator.clipboard.writeText(shareText).then(() => {
-                showToast("📋 Đã copy tin nhắn nhắc nợ! Mở Zalo để dán và gửi.");
-                window.open("https://zalo.me/", "_blank");
+                showToast("📋 Đã copy Danh Sách Nợ! Mở Messenger để dán (Ctrl+V) gửi nhóm.");
+                window.open("https://m.me/", "_blank");
             });
         }
     }
@@ -1898,9 +1920,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         <button class="btn-pay-qr" data-pay-name="${name}">
                             💳 QR CẦU
                         </button>
-                        <button class="btn-pay-qr btn-zalo-share" data-zalo-name="${name}" style="background: linear-gradient(135deg, #0068ff 0%, #004fb9 100%); color: #fff; border: none; font-weight:700;" title="Gửi hóa đơn Zalo">
-                            📲 Zalo
-                        </button>
                     ` : ''}
 
                     ${isAdmin ? `
@@ -1935,18 +1954,11 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.totalShuttlesBadge.textContent = `${netTotalShuttles} quả`;
         elements.totalMoneyBadge.textContent = netTotalMoney < 0 ? `-${formatMoney(Math.abs(netTotalMoney))}` : formatMoney(netTotalMoney);
 
-        // Register Pay QR, Buy Shuttle & Zalo Share button events
-        document.querySelectorAll('.btn-pay-qr:not(.btn-buy-shuttle):not(.btn-zalo-share)').forEach(btn => {
+        // Register Pay QR & Buy Shuttle button events
+        document.querySelectorAll('.btn-pay-qr:not(.btn-buy-shuttle)').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const name = e.target.getAttribute('data-pay-name');
                 openPaymentModal(name);
-            });
-        });
-
-        document.querySelectorAll('.btn-zalo-share').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const name = e.target.getAttribute('data-zalo-name');
-                shareZaloInvoice(name);
             });
         });
 
@@ -2282,12 +2294,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    if (elements.btnShareZaloModal) {
-        elements.btnShareZaloModal.addEventListener('click', () => {
-            if (currentPayPlayer) {
-                shareZaloInvoice(currentPayPlayer);
-            }
-        });
+    if (elements.btnShareMessenger) {
+        elements.btnShareMessenger.addEventListener('click', shareMessengerAllDebts);
+    }
+
+    if (elements.btnShareMessengerModal) {
+        elements.btnShareMessengerModal.addEventListener('click', shareMessengerAllDebts);
     }
 
     elements.btnMarkPaid.addEventListener('click', () => {

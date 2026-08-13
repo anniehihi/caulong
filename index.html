@@ -1244,103 +1244,72 @@ body {
 </head>
 <body>
     <div class="app-container">
-        <!-- Header -->
+        <!-- Minimal Header -->
         <header class="app-header">
             <div class="logo-group">
                 <div class="logo-icon">🏸</div>
                 <div class="logo-text">
                     <h1>CẦU LÔNG <span>ĐỀN CẦU</span></h1>
-                    <span class="sub-title">Chọn Thắng -> Thua & MBBank Auto Check</span>
                 </div>
             </div>
 
-            <!-- Price Config & Bank Config Buttons -->
-            <div class="header-settings-group">
-                <div class="price-config-box">
-                    <label for="inputShuttlePrice">Giá 1 quả:</label>
-                    <div class="price-input-wrapper">
-                        <input type="number" id="inputShuttlePrice" value="26000" step="1000" min="0" class="price-control">
-                        <span class="currency-unit">đ</span>
-                    </div>
-                </div>
+            <div class="header-right-actions">
+                <span id="headerCloudBadge" class="badge-status" title="Trạng thái Cloud Supabase">🟡 Local</span>
+                
+                <button class="icon-action-btn" id="btnSyncCloud" title="Đồng bộ dữ liệu từ Cloud">
+                    <i data-lucide="refresh-cw"></i>
+                </button>
 
-                <button class="btn btn-dark btn-sm" id="btnBankSettings">
-                    <i data-lucide="settings"></i> Cài STK & Supabase Cloud
+                <button class="icon-action-btn" id="btnBankSettings" title="Cài đặt & Cấu hình">
+                    <i data-lucide="settings"></i>
                 </button>
-                <button class="btn btn-dark btn-sm" id="btnSyncCloud" title="Tải lại toàn bộ dữ liệu mới nhất từ Supabase Cloud">
-                    <i data-lucide="refresh-cw"></i> Đồng bộ Cloud
-                </button>
-                <span id="headerCloudBadge" style="font-size: 0.75rem; padding: 4px 10px; border-radius: 12px; font-weight: 700; background: rgba(255, 183, 3, 0.15); color: var(--accent-gold); border: 1px solid rgba(255, 183, 3, 0.3); display: inline-flex; align-items: center; gap: 4px;" title="Trạng thái kết nối Cloud Supabase">
-                    🟡 Local
-                </span>
-            </div>
 
-            <div class="header-actions">
-                <button class="btn btn-warning btn-sm" id="btnAdminToggle">
-                    <i data-lucide="shield" id="adminIcon"></i> <span id="adminBtnText">🔑 Quyền Admin</span>
+                <button class="icon-action-btn" id="btnShowHistory" title="Xem Lịch sử trận đấu">
+                    <i data-lucide="history"></i>
                 </button>
-                <button class="btn btn-dark btn-sm" id="btnChangePin" style="display: none;" title="Đổi PIN Admin">
-                    <i data-lucide="key"></i> Đổi PIN
-                </button>
-                <button class="icon-btn" id="btnAudioToggle" title="Bật/Tắt âm thanh">
-                    <i data-lucide="volume-2" id="audioIcon"></i>
-                </button>
-                <button class="btn btn-dark btn-sm" id="btnShowHistory">
-                    <i data-lucide="history"></i> Lịch sử
-                </button>
-                <button class="btn btn-danger btn-sm" id="btnResetAll">
-                    <i data-lucide="rotate-ccw"></i> Đặt lại
+
+                <button class="btn btn-warning btn-sm btn-admin" id="btnAdminToggle">
+                    <i data-lucide="shield" id="adminIcon"></i> <span id="adminBtnText">Admin</span>
                 </button>
             </div>
         </header>
 
-        <!-- Mode Selector -->
+        <!-- Mode Selector Bar -->
         <nav class="mode-selector-bar">
-            <button class="mode-btn active" id="btnMode2v2" data-mode="2v2">
-                <i data-lucide="users"></i> ĐÁNH ĐÔI 2v2 (Chọn 2 Thắng ➔ 2 Thua)
-            </button>
-            <button class="mode-btn" id="btnMode1v1" data-mode="1v1">
-                <i data-lucide="user"></i> ĐÁNH ĐƠN 1v1 (Chọn 1 Thắng ➔ 1 Thua)
-            </button>
+            <button class="mode-btn active" id="btnMode2v2" data-mode="2v2">👥 ĐÁNH ĐÔI (2v2)</button>
+            <button class="mode-btn" id="btnMode1v1" data-mode="1v1">👤 ĐÁNH ĐƠN (1v1)</button>
         </nav>
 
         <!-- Main Content Grid -->
         <main class="main-content">
-            <!-- Left Panel: Interactive Tap Match Recorder -->
+            <!-- Left Panel: Tap Match Recorder -->
             <section class="recorder-panel">
                 <div class="panel-card">
                     <!-- Status Header / Step Guidance -->
                     <div class="step-guide-box step-winner" id="stepGuideBox">
-                        <div class="step-badge" id="stepBadge">LẦN BẤM 1</div>
-                        <div class="step-title" id="stepTitle">🏆 CHỌN NGƯỜI THẮNG</div>
-                        <div class="step-sub" id="stepSub">Bấm chọn 2 người chiến thắng</div>
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <span class="step-badge" id="stepBadge">BẤM 1</span>
+                            <button class="btn btn-dark btn-sm" id="btnClearSelection" style="padding: 3px 8px; font-size: 0.75rem;">
+                                ↺ Chọn lại
+                            </button>
+                        </div>
+                        <h3 class="step-title" id="stepTitle" style="margin-top: 6px;">🏆 CHỌN NGƯỜI THẮNG</h3>
+                        <div class="step-sub" id="stepSub" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
+                            Bấm chọn 2 người chiến thắng
+                        </div>
                     </div>
 
                     <!-- Selected Teams Preview Box -->
-                    <div class="selection-preview-grid">
-                        <div class="preview-box winner-preview">
-                            <span class="preview-label">🏆 BÊN THẮNG:</span>
-                            <div class="preview-names" id="winnerPreviewNames">Chưa chọn</div>
-                        </div>
-
-                        <div class="preview-box loser-preview">
-                            <span class="preview-label">❌ BÊN THUA (+0.5 quả / 13k):</span>
-                            <div class="preview-names" id="loserPreviewNames">Chưa chọn</div>
-                        </div>
-                    </div>
-
-                    <!-- Cancel / Reset Selection Buttons -->
-                    <div class="preview-actions">
-                        <button class="btn btn-dark btn-sm" id="btnClearSelection">
-                            <i data-lucide="rotate-ccw"></i> Chọn lại
-                        </button>
+                    <div class="selection-preview-grid" style="display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 12px; border: 1px solid var(--border-color);">
+                        <div>🏆 <strong>Thắng:</strong> <span id="winnerPreviewNames" style="color: var(--accent-emerald);">Chưa chọn</span></div>
+                        <div>❌ <strong>Thua (+0.5 quả):</strong> <span id="loserPreviewNames" style="color: var(--accent-rose);">Chưa chọn</span></div>
                     </div>
 
                     <!-- Player Grid Tiles to Click -->
                     <div class="player-selection-section">
-                        <div class="section-title-row">
-                            <span>DANH SÁCH Ô NGƯỜI CHƠI (BẤM VÀO TÊN)</span>
-                            <button class="btn-text" id="btnAddPlayerBtn">⚙️ Quản lý người chơi</button>
+                        <div class="section-title-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted);">BẤM VÀO TÊN NGƯỜI CHƠI:</span>
+                            <button class="btn-text" id="btnAddPlayerBtn" style="font-size: 0.8rem; color: var(--accent-gold); background: none; border: none; cursor: pointer; font-weight: 700;">⚙️ Danh sách</button>
                         </div>
 
                         <div class="player-tiles-grid" id="playerTilesGrid">
@@ -1353,11 +1322,11 @@ body {
             <!-- Right Panel: Penalty & Money Leaderboard -->
             <section class="leaderboard-panel">
                 <div class="panel-card">
-                    <div class="card-header">
-                        <h2><i data-lucide="flame"></i> BẢNG ĐỀN CẦU & THÀNH TIỀN</h2>
-                        <div class="total-summary-badges">
-                            <span class="total-shuttles-badge" id="totalShuttlesBadge">0 quả</span>
-                            <span class="total-money-badge" id="totalMoneyBadge">0đ</span>
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="margin: 0; font-size: 1rem; font-weight: 800;"><i data-lucide="flame"></i> BẢNG NỢ CẦU</h3>
+                        <div class="total-summary-badges" style="display: flex; gap: 6px;">
+                            <span class="total-shuttles-badge" id="totalShuttlesBadge" style="font-size: 0.8rem; padding: 3px 8px; border-radius: 10px; background: rgba(255, 183, 3, 0.15); color: var(--accent-gold); font-weight: 800;">0 quả</span>
+                            <span class="total-money-badge" id="totalMoneyBadge" style="font-size: 0.8rem; padding: 3px 8px; border-radius: 10px; background: rgba(0, 230, 118, 0.15); color: var(--accent-emerald); font-weight: 800;">0đ</span>
                         </div>
                     </div>
 
@@ -1431,8 +1400,13 @@ body {
                 <div class="modal-body">
                     <form id="bankForm">
                         <div class="form-group">
-                            <label for="bankSelect">Ngân hàng nhận tiền:</label>
-                            <select id="bankSelect" class="form-control">
+                            <label for="inputShuttlePrice">Giá 1 quả cầu (đ):</label>
+                            <input type="number" id="inputShuttlePrice" value="26000" step="1000" min="0" class="form-control" style="margin-top: 4px;">
+                        </div>
+
+                        <div class="form-group" style="margin-top: 12px; border-top: 1px dashed var(--border-color); padding-top: 10px;">
+                            <label for="bankSelect">Ngân hàng nhận tiền thanh toán:</label>
+                            <select id="bankSelect" class="form-control" style="margin-top: 4px;">
                                 <option value="MB" selected>MBBank (Ngân hàng Quân Đội)</option>
                                 <option value="TCB">Techcombank</option>
                                 <option value="VCB">Vietcombank</option>
@@ -1443,8 +1417,6 @@ body {
                                 <option value="TPB">TPBank</option>
                                 <option value="STB">Sacombank</option>
                                 <option value="VIB">VIB</option>
-                                <option value="MSB">MSB</option>
-                                <option value="SHB">SHB</option>
                             </select>
                         </div>
                         <div class="form-group" style="margin-top: 10px;">
@@ -1455,8 +1427,6 @@ body {
                             <label for="bankAccName">Tên chủ tài khoản (Viết không dấu):</label>
                             <input type="text" id="bankAccName" placeholder="VD: NGUYEN VAN A" class="form-control" style="text-transform: uppercase;">
                         </div>
-
-
 
                         <!-- Supabase Cloud Connection Settings -->
                         <div class="form-group" style="margin-top: 12px; border-top: 1px dashed var(--border-color); padding-top: 10px;">
@@ -1476,13 +1446,25 @@ body {
                                     ⚪ Chưa cấu hình Supabase
                                 </span>
                                 <button type="button" id="btnShowSqlModal" class="btn btn-dark btn-sm" style="font-size: 0.75rem;">
-                                    📜 Lấy SQL Script Tạo Bảng
+                                    📜 Script SQL Tạo Bảng
                                 </button>
                             </div>
                         </div>
 
+                        <div class="form-group" style="margin-top: 14px; border-top: 1px dashed var(--border-color); padding-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+                            <button type="button" class="btn btn-dark btn-block" id="btnAudioToggle">
+                                <i data-lucide="volume-2" id="audioIcon"></i> <span id="audioText">Bật / Tắt Âm Thanh</span>
+                            </button>
+                            <button type="button" class="btn btn-dark btn-block" id="btnChangePin" style="display: none;">
+                                🔑 Đổi Mã PIN Admin
+                            </button>
+                            <button type="button" class="btn btn-danger btn-block" id="btnResetAll">
+                                ⚠️ Đặt Lại Toàn Bộ Dữ Liệu Về 0
+                            </button>
+                        </div>
+
                         <div class="form-actions" style="margin-top: 16px;">
-                            <button type="submit" class="btn btn-success btn-block">Lưu Cấu Hình STK & Supabase</button>
+                            <button type="submit" class="btn btn-success btn-block">Lưu Cấu Hình</button>
                         </div>
                     </form>
                 </div>
@@ -2486,6 +2468,12 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.bankForm.addEventListener('submit', (e) => {
         e.preventDefault();
         if (!isAdmin) return;
+
+        const priceVal = parseInt(elements.inputShuttlePrice.value);
+        if (!isNaN(priceVal) && priceVal >= 0) {
+            shuttlePrice = priceVal;
+        }
+
         bankConfig.bankId = elements.bankSelect.value;
         bankConfig.accountNo = elements.bankAccNo.value.trim();
         bankConfig.accountName = elements.bankAccName.value.trim().toUpperCase();

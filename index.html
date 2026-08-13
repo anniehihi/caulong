@@ -1825,7 +1825,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 elements.bankSelect.value = bankConfig.bankId || 'MB';
                 elements.bankAccNo.value = bankConfig.accountNo || '';
                 elements.bankAccName.value = bankConfig.accountName || '';
-                elements.sepayToken.value = bankConfig.sepayToken || '';
             }
         }
 
@@ -2361,7 +2360,6 @@ document.addEventListener('DOMContentLoaded', () => {
         bankConfig.bankId = elements.bankSelect.value;
         bankConfig.accountNo = elements.bankAccNo.value.trim();
         bankConfig.accountName = elements.bankAccName.value.trim().toUpperCase();
-        bankConfig.sepayToken = elements.sepayToken.value.trim();
 
         const sbUrl = elements.supabaseUrl.value.trim();
         const sbKey = elements.supabaseKey.value.trim();

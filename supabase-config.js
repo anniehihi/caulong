@@ -24,17 +24,22 @@
             return this.init();
         },
 
+        getSupabaseLib() {
+            return window.supabase || window.Supabase || (typeof supabase !== 'undefined' ? supabase : null);
+        },
+
         isConfigured() {
-            return !!(this.getUrl() && this.getKey() && window.supabase);
+            return !!(this.getUrl() && this.getKey() && this.getSupabaseLib());
         },
 
         init() {
             const url = this.getUrl();
             const key = this.getKey();
+            const lib = this.getSupabaseLib();
 
-            if (url && key && window.supabase) {
+            if (url && key && lib) {
                 try {
-                    supabaseClient = window.supabase.createClient(url, key);
+                    supabaseClient = lib.createClient(url, key);
                     console.log("⚡ Supabase Client initialized successfully!");
                     return true;
                 } catch (err) {

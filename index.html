@@ -1682,9 +1682,19 @@ document.addEventListener('DOMContentLoaded', () => {
         pendingAdminAction = null;
     });
 
-    elements.adminPinForm.addEventListener('submit', (e) => {
+    elements.adminPinForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const input = elements.adminPinInput.value.trim();
+
+        // Always fetch fresh PIN from Supabase Cloud to ensure cross-device accuracy
+        if (window.SupabaseService && SupabaseService.isConfigured()) {
+            const freshSettings = await SupabaseService.fetchAppSettings();
+            if (freshSettings && freshSettings.bank_config && freshSettings.bank_config.adminPin) {
+                adminPin = freshSettings.bank_config.adminPin;
+                localStorage.setItem('badminton_admin_pin', adminPin);
+            }
+        }
+
         if (input === adminPin) {
             isAdmin = true;
             elements.adminPinModal.classList.remove('active');

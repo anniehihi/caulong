@@ -929,22 +929,19 @@ body {
 
 @keyframes toastIn {
     from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* --- Mobile Responsive & Touch Enhancements --- */
+    to /* --- Ultra-Clean Mobile Responsive UX --- */
 @media (max-width: 768px) {
     .app-container {
-        padding: 8px;
-        gap: 10px;
+        padding: 6px;
+        gap: 8px;
     }
 
     .app-header {
-        padding: 10px 12px;
-        border-radius: 14px;
+        padding: 8px 10px;
+        border-radius: 12px;
         flex-direction: column;
         align-items: stretch;
-        gap: 10px;
+        gap: 6px;
     }
 
     .logo-group {
@@ -953,114 +950,162 @@ body {
     }
 
     .logo-text h1 {
-        font-size: 1.15rem;
+        font-size: 1.05rem;
+    }
+
+    .sub-title {
+        display: none;
     }
 
     .header-settings-group {
         width: 100%;
-        justify-content: space-between;
-        gap: 8px;
-        flex-wrap: wrap;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        overflow-x: auto;
+        padding-bottom: 2px;
+        -webkit-overflow-scrolling: touch;
     }
 
     .price-config-box {
-        flex: 1;
-        justify-content: space-between;
-        padding: 4px 8px;
+        padding: 2px 6px;
+        font-size: 0.75rem;
     }
 
     .price-control {
-        width: 70px;
-        font-size: 0.85rem;
-        padding: 4px 6px;
+        width: 55px;
+        font-size: 0.75rem;
+        padding: 2px 4px;
     }
 
     .header-actions {
         width: 100%;
-        justify-content: space-between;
-        gap: 6px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        overflow-x: auto;
+        padding-bottom: 2px;
+        -webkit-overflow-scrolling: touch;
     }
 
     .header-actions .btn {
         flex: 1;
-        font-size: 0.75rem;
+        font-size: 0.72rem;
+        padding: 6px 6px;
+        white-space: nowrap;
+    }
+
+    .mode-selector-bar {
+        gap: 4px;
+    }
+
+    .mode-btn {
         padding: 8px 4px;
-        justify-content: center;
+        font-size: 0.78rem;
     }
 
     .main-content {
         grid-template-columns: 1fr;
-        gap: 12px;
+        gap: 10px;
+    }
+
+    .panel-card {
+        padding: 10px;
     }
 
     .step-guide-box {
-        padding: 12px;
+        padding: 10px;
     }
 
     .step-title {
-        font-size: 1.05rem;
-    }
-
-    .player-selection-card {
-        padding: 12px;
+        font-size: 0.95rem;
     }
 
     .player-tiles-grid {
         grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
+        gap: 6px;
     }
 
     .player-tile {
-        padding: 12px 6px;
-        border-radius: 12px;
-        min-height: 65px;
+        padding: 8px 4px;
+        border-radius: 10px;
+        min-height: 54px;
+    }
+
+    .player-tile:active {
+        transform: scale(0.95);
     }
 
     .player-tile .tile-name {
-        font-size: 1rem;
+        font-size: 0.9rem;
     }
 
+    /* Single 1-line Leaderboard Cards on Mobile */
     .penalty-card-item {
-        padding: 10px 12px;
-        flex-wrap: wrap;
-        gap: 8px;
+        padding: 8px 10px;
+        flex-wrap: nowrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 6px;
     }
 
     .player-info {
         flex: 1;
-        min-width: 120px;
+        min-width: 0;
+    }
+
+    .player-name-text {
+        font-size: 0.9rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .penalty-controls {
-        width: 100%;
-        justify-content: space-between;
-        border-top: 1px dashed rgba(255, 255, 255, 0.08);
-        padding-top: 8px;
-        margin-top: 4px;
+        width: auto;
+        border-top: none;
+        padding-top: 0;
+        margin-top: 0;
+        gap: 6px;
+        flex-wrap: nowrap;
+        justify-content: flex-end;
+    }
+
+    .shuttle-count-box {
+        flex-direction: row;
+        gap: 6px;
+        align-items: center;
+    }
+
+    .shuttle-count-val {
+        font-size: 0.9rem;
+    }
+
+    .player-money-val {
+        font-size: 0.8rem;
     }
 
     .btn-pay-qr {
-        padding: 8px 12px;
-        font-size: 0.85rem;
+        padding: 6px 10px;
+        font-size: 0.75rem;
     }
 
     .btn-counter {
-        height: 36px;
-        padding: 6px 12px;
-        font-size: 0.85rem;
+        height: 32px;
+        padding: 4px 8px;
+        font-size: 0.75rem;
     }
 
     .modal-content {
         max-width: 95vw;
-        padding: 16px;
+        padding: 14px;
         border-radius: 16px;
         max-height: 90vh;
-        overflow-y: auto;
     }
 
     .qr-image {
-        width: 190px;
-        height: 190px;
+        width: 180px;
+        height: 180px;
     }
 
     .toast-container {
@@ -1070,7 +1115,7 @@ body {
     .toast {
         width: 100%;
         text-align: center;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
     }
 }
 
@@ -1080,7 +1125,7 @@ body {
     }
 
     .logo-icon {
-        font-size: 1.6rem;
+        font-size: 1.5rem;
     }
 
     .player-tiles-grid {
@@ -1089,25 +1134,34 @@ body {
     }
 
     .player-tile {
-        padding: 10px 4px;
-        min-height: 60px;
+        padding: 8px 4px;
+        min-height: 52px;
     }
 
     .player-tile .tile-name {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
     }
 
     .player-tile .status-icon-badge {
-        font-size: 0.7rem;
-        padding: 2px 6px;
+        font-size: 0.65rem;
+        padding: 2px 4px;
     }
 
     .mode-btn {
-        padding: 10px 6px;
-        font-size: 0.8rem;
+        padding: 8px 4px;
+        font-size: 0.75rem;
     }
 
     .shuttle-count-val {
+        font-size: 0.85rem;
+    }
+
+    .player-avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 0.85rem;
+    }
+}ount-val {
         font-size: 1.6rem;
     }
 }

@@ -1579,35 +1579,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleBuyShuttle(playerName) {
-        const inputStr = prompt(`Nhập số hộp cầu mà "${playerName}" đã mua:`, "1");
-        if (!inputStr) return;
-        const boxes = parseFloat(inputStr);
-        if (isNaN(boxes) || boxes <= 0) return;
+        requireAdmin(() => {
+            const inputStr = prompt(`Nhập số hộp cầu mà "${playerName}" đã mua:`, "1");
+            if (!inputStr) return;
+            const boxes = parseFloat(inputStr);
+            if (isNaN(boxes) || boxes <= 0) return;
 
-        const boxPrice = shuttleBoxPrice || 260000;
-        const perShuttlePrice = shuttlePrice || 26000;
-        const totalDeductedMoney = boxes * boxPrice;
-        const equivalentShuttles = totalDeductedMoney / perShuttlePrice;
+            const boxPrice = shuttleBoxPrice || 260000;
+            const perShuttlePrice = shuttlePrice || 26000;
+            const totalDeductedMoney = boxes * boxPrice;
+            const equivalentShuttles = totalDeductedMoney / perShuttlePrice;
 
-        playerPenalties[playerName] = (playerPenalties[playerName] || 0) - equivalentShuttles;
+            playerPenalties[playerName] = (playerPenalties[playerName] || 0) - equivalentShuttles;
 
-        const historyItem = {
-            mode: 'buy_shuttle',
-            winners: playerName,
-            losers: `Mua ${boxes} hộp cầu`,
-            penalty: -equivalentShuttles,
-            money: -totalDeductedMoney,
-            time: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
-        };
-        historyLog.unshift(historyItem);
+            const historyItem = {
+                mode: 'buy_shuttle',
+                winners: playerName,
+                losers: `Mua ${boxes} hộp cầu`,
+                penalty: -equivalentShuttles,
+                money: -totalDeductedMoney,
+                time: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+            };
+            historyLog.unshift(historyItem);
 
-        saveState();
-        if (window.SupabaseService && SupabaseService.isConfigured()) {
-            SupabaseService.addMatchHistory(historyItem);
-        }
-        renderLeaderboard();
-        soundEngine.playSuccessSound();
-        showToast(`📦 GHI NHẬN: ${playerName} mua ${boxes} hộp cầu (-${formatMoney(totalDeductedMoney)})`);
+            saveState();
+            if (window.SupabaseService && SupabaseService.isConfigured()) {
+                SupabaseService.addMatchHistory(historyItem);
+            }
+            renderLeaderboard();
+            soundEngine.playSuccessSound();
+            showToast(`📦 GHI NHẬN: ${playerName} mua ${boxes} hộp cầu (-${formatMoney(totalDeductedMoney)})`);
+        });
     }
 
     // --- Render Leaderboard ---
@@ -1652,9 +1654,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="player-money-val" style="${moneyOwed < 0 ? 'color: var(--accent-emerald); font-weight:700;' : ''}">${moneyDisplay}</div>
                     </div>
 
-                    <button class="btn-pay-qr btn-buy-shuttle" data-buy-name="${name}" style="background: #27272a; border-color: var(--border-color); color: var(--text-main);" title="Ghi nhận mua hộp cầu cho sân">
-                        📦 Mua Cầu
-                    </button>
+                    ${isAdmin ? `
+                        <button class="btn-pay-qr btn-buy-shuttle" data-buy-name="${name}" style="background: #27272a; border-color: var(--border-color); color: var(--text-main);" title="Ghi nhận mua hộp cầu cho sân">
+                            📦 Mua Cầu
+                        </button>
+                    ` : ''}
 
                     ${moneyOwed > 0 ? `
                         <button class="btn-pay-qr" data-pay-name="${name}">

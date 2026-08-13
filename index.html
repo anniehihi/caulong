@@ -1138,6 +1138,9 @@ body {
                 <button class="btn btn-dark btn-sm" id="btnBankSettings">
                     <i data-lucide="settings"></i> Cài STK & Supabase Cloud
                 </button>
+                <button class="btn btn-dark btn-sm" id="btnSyncCloud" title="Tải lại toàn bộ dữ liệu mới nhất từ Supabase Cloud">
+                    <i data-lucide="refresh-cw"></i> Đồng bộ Cloud
+                </button>
                 <span id="headerCloudBadge" style="font-size: 0.75rem; padding: 4px 10px; border-radius: 12px; font-weight: 700; background: rgba(255, 183, 3, 0.15); color: var(--accent-gold); border: 1px solid rgba(255, 183, 3, 0.3); display: inline-flex; align-items: center; gap: 4px;" title="Trạng thái kết nối Cloud Supabase">
                     🟡 Local
                 </span>
@@ -1612,7 +1615,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentMode = '2v2'; // '2v2' or '1v1'
     let shuttlePrice = parseInt(localStorage.getItem('badminton_shuttle_price') || '26000');
     let bankConfig = JSON.parse(localStorage.getItem('badminton_bank_config') || '{"bankId":"MB","accountNo":"","accountName":"","sepayToken":""}');
-    let registeredPlayers = JSON.parse(localStorage.getItem('badminton_players') || '["Toàn", "Tú", "Phượng", "Tiến", "Hùng", "Nam"]');
+    let registeredPlayers = JSON.parse(localStorage.getItem('badminton_players') || '["Toàn", "Tú", "Tiến"]');
     let playerPenalties = JSON.parse(localStorage.getItem('badminton_penalties') || '{}');
     let historyLog = JSON.parse(localStorage.getItem('badminton_penalty_history') || '[]');
 
@@ -1690,6 +1693,7 @@ document.addEventListener('DOMContentLoaded', () => {
         supabaseKey: document.getElementById('supabaseKey'),
         supabaseStatusBadge: document.getElementById('supabaseStatusBadge'),
         headerCloudBadge: document.getElementById('headerCloudBadge'),
+        btnSyncCloud: document.getElementById('btnSyncCloud'),
         btnShowSqlModal: document.getElementById('btnShowSqlModal'),
         sqlModal: document.getElementById('sqlModal'),
         btnCloseSqlModal: document.getElementById('btnCloseSqlModal'),
@@ -1833,6 +1837,8 @@ document.addEventListener('DOMContentLoaded', () => {
             playersData.forEach(p => {
                 playerPenalties[p.name] = parseFloat(p.penalties || 0);
             });
+            localStorage.setItem('badminton_players', JSON.stringify(registeredPlayers));
+            localStorage.setItem('badminton_penalties', JSON.stringify(playerPenalties));
         }
 
         // 3. Fetch History
@@ -2592,6 +2598,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast("Đã đặt lại toàn bộ!");
             }
         });
+    });
+
+    elements.btnSyncCloud.addEventListener('click', () => {
+        initSupabaseDataSync();
     });
 
     elements.btnAudioToggle.addEventListener('click', () => {

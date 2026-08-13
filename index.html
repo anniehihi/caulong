@@ -932,14 +932,183 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* --- Mobile Responsive & Touch Enhancements --- */
 @media (max-width: 768px) {
-    .main-content {
-        grid-template-columns: 1fr;
+    .app-container {
+        padding: 8px;
+        gap: 10px;
+    }
+
+    .app-header {
+        padding: 10px 12px;
+        border-radius: 14px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .logo-group {
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .logo-text h1 {
+        font-size: 1.15rem;
     }
 
     .header-settings-group {
         width: 100%;
         justify-content: space-between;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .price-config-box {
+        flex: 1;
+        justify-content: space-between;
+        padding: 4px 8px;
+    }
+
+    .price-control {
+        width: 70px;
+        font-size: 0.85rem;
+        padding: 4px 6px;
+    }
+
+    .header-actions {
+        width: 100%;
+        justify-content: space-between;
+        gap: 6px;
+    }
+
+    .header-actions .btn {
+        flex: 1;
+        font-size: 0.75rem;
+        padding: 8px 4px;
+        justify-content: center;
+    }
+
+    .main-content {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .step-guide-box {
+        padding: 12px;
+    }
+
+    .step-title {
+        font-size: 1.05rem;
+    }
+
+    .player-selection-card {
+        padding: 12px;
+    }
+
+    .player-tiles-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+
+    .player-tile {
+        padding: 12px 6px;
+        border-radius: 12px;
+        min-height: 65px;
+    }
+
+    .player-tile .tile-name {
+        font-size: 1rem;
+    }
+
+    .penalty-card-item {
+        padding: 10px 12px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .player-info {
+        flex: 1;
+        min-width: 120px;
+    }
+
+    .penalty-controls {
+        width: 100%;
+        justify-content: space-between;
+        border-top: 1px dashed rgba(255, 255, 255, 0.08);
+        padding-top: 8px;
+        margin-top: 4px;
+    }
+
+    .btn-pay-qr {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+
+    .btn-counter {
+        height: 36px;
+        padding: 6px 12px;
+        font-size: 0.85rem;
+    }
+
+    .modal-content {
+        max-width: 95vw;
+        padding: 16px;
+        border-radius: 16px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .qr-image {
+        width: 190px;
+        height: 190px;
+    }
+
+    .toast-container {
+        width: 90%;
+    }
+
+    .toast {
+        width: 100%;
+        text-align: center;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .logo-text h1 {
+        font-size: 1.05rem;
+    }
+
+    .logo-icon {
+        font-size: 1.6rem;
+    }
+
+    .player-tiles-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+    }
+
+    .player-tile {
+        padding: 10px 4px;
+        min-height: 60px;
+    }
+
+    .player-tile .tile-name {
+        font-size: 0.9rem;
+    }
+
+    .player-tile .status-icon-badge {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+    }
+
+    .mode-btn {
+        padding: 10px 6px;
+        font-size: 0.8rem;
+    }
+
+    .shuttle-count-val {
+        font-size: 1.6rem;
     }
 }
     </style>

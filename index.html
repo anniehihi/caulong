@@ -1246,6 +1246,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 elements.bankSelect.value = bankConfig.bankId || 'MB';
                 elements.bankAccNo.value = bankConfig.accountNo || '';
                 elements.bankAccName.value = bankConfig.accountName || '';
+                if (bankConfig.adminPin) {
+                    adminPin = bankConfig.adminPin;
+                    localStorage.setItem('badminton_admin_pin', adminPin);
+                }
             }
         }
 
@@ -1335,7 +1339,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('badminton_penalty_history', JSON.stringify(historyLog));
 
         if (window.SupabaseService && SupabaseService.isConfigured()) {
-            SupabaseService.saveAppSettings(shuttlePrice, bankConfig);
+            SupabaseService.saveAppSettings(shuttlePrice, bankConfig, adminPin);
             registeredPlayers.forEach(name => {
                 SupabaseService.savePlayer(name, playerPenalties[name] || 0);
             });
@@ -1737,8 +1741,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         adminPin = newPin;
         localStorage.setItem('badminton_admin_pin', adminPin);
+        saveState();
         elements.changePinModal.classList.remove('active');
-        showToast("🎉 Đã thay đổi Mã PIN Admin thành công!");
+        showToast("🎉 Đã thay đổi & đồng bộ Mã PIN Admin sang Cloud!");
     });
 
     // Price input change

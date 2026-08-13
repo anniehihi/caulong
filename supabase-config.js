@@ -93,16 +93,21 @@
             }
         },
 
-        async saveAppSettings(shuttlePrice, bankConfig) {
+        async saveAppSettings(shuttlePrice, bankConfig, adminPin) {
             const client = this.getClient();
             if (!client) return false;
             try {
+                const configToSave = Object.assign({}, bankConfig);
+                if (adminPin) {
+                    configToSave.adminPin = adminPin;
+                }
+
                 const { error } = await client
                     .from('app_settings')
                     .upsert({
                         key: 'default',
                         shuttle_price: shuttlePrice,
-                        bank_config: bankConfig,
+                        bank_config: configToSave,
                         updated_at: new Date().toISOString()
                     });
 

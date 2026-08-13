@@ -754,6 +754,65 @@ body {
     margin-top: 2px;
 }
 
+/* History Log Mobile Responsive Styles */
+.history-log-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 65vh;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.history-log-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+.history-log-list::-webkit-scrollbar-thumb {
+    background: var(--web3-purple);
+    border-radius: 4px;
+}
+
+.history-log-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    gap: 10px;
+    font-size: 0.85rem;
+    transition: all 0.25s ease;
+}
+
+.history-log-item:hover {
+    border-color: var(--border-cyan);
+    background: rgba(0, 242, 254, 0.04);
+}
+
+.history-log-item-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    word-break: break-word;
+    flex: 1;
+    line-height: 1.4;
+}
+
+.history-log-item-meta {
+    font-size: 0.78rem;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.empty-msg {
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
+    padding: 20px;
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
     .main-content {
@@ -762,6 +821,34 @@ body {
 }
 
 @media (max-width: 600px) {
+    .modal-content {
+        padding: 16px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .history-log-list {
+        max-height: 70vh;
+    }
+
+    .history-log-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        padding: 10px 12px;
+    }
+
+    .history-log-item-meta {
+        text-align: left;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px dashed rgba(255, 255, 255, 0.08);
+        padding-top: 6px;
+        margin-top: 2px;
+    }
+
     .app-header {
         padding: 8px 10px;
     }
@@ -2212,22 +2299,24 @@ document.addEventListener('DOMContentLoaded', () => {
             item.className = 'history-log-item';
             if (log.mode === 'buy_shuttle_fund' || log.mode === 'buy_shuttle') {
                 item.innerHTML = `
-                    <div>
-                        📦 <strong>${log.winners}</strong>: ${log.losers}
+                    <div class="history-log-item-details">
+                        <span>📦 <strong>${log.winners}</strong></span>
+                        <span style="color: var(--text-muted); font-size: 0.82rem;">${log.losers}</span>
                     </div>
-                    <div style="font-size: 0.8rem; opacity: 0.8; text-align: right; color: var(--accent-emerald);">
-                        ${log.penalty} quả (${formatMoney(Math.abs(log.money))})<br>
-                        <span style="opacity: 0.6; color: var(--text-muted);">${log.time}</span>
+                    <div class="history-log-item-meta" style="color: var(--web3-emerald);">
+                        <span>${log.penalty} quả (${formatMoney(Math.abs(log.money))})</span>
+                        <span style="color: var(--text-dim);">${log.time}</span>
                     </div>
                 `;
             } else {
                 item.innerHTML = `
-                    <div>
-                        🏆 <strong>${log.winners}</strong> thắng ➔ ❌ <strong>${log.losers}</strong> thua
+                    <div class="history-log-item-details">
+                        <div>🏆 <strong style="color: var(--web3-cyan);">${log.winners}</strong> thắng</div>
+                        <div>❌ <span style="color: var(--web3-rose);">${log.losers}</span> thua</div>
                     </div>
-                    <div style="font-size: 0.8rem; opacity: 0.8; text-align: right;">
-                        +${log.penalty} quả / người (${formatMoney(log.money)})<br>
-                        <span style="opacity: 0.6;">${log.time}</span>
+                    <div class="history-log-item-meta" style="color: var(--web3-gold);">
+                        <span>+${log.penalty} quả/người (${formatMoney(log.money)})</span>
+                        <span style="color: var(--text-dim);">${log.time}</span>
                     </div>
                 `;
             }

@@ -578,6 +578,10 @@ body {
                     <i data-lucide="history"></i>
                 </button>
 
+                <button class="btn btn-sm btn-success" id="btnHeaderBuyShuttle" style="display: none; font-size: 0.78rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; margin-right: 4px;" title="Ghi nhận Quỹ Mua Cầu">
+                    📦 Quỹ Mua Cầu
+                </button>
+
                 <button class="btn btn-warning btn-sm btn-admin" id="btnAdminToggle">
                     <i data-lucide="shield" id="adminIcon"></i> <span id="adminBtnText">Admin</span>
                 </button>
@@ -1070,6 +1074,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnMode2v2: document.getElementById('btnMode2v2'),
 
         btnAdminToggle: document.getElementById('btnAdminToggle'),
+        btnHeaderBuyShuttle: document.getElementById('btnHeaderBuyShuttle'),
         adminBtnText: document.getElementById('adminBtnText'),
         adminIcon: document.getElementById('adminIcon'),
         btnChangePin: document.getElementById('btnChangePin'),
@@ -1209,12 +1214,14 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.adminBtnText.textContent = '👑 Admin (Đăng xuất)';
             elements.adminIcon.setAttribute('data-lucide', 'shield-check');
             elements.btnChangePin.style.display = 'inline-flex';
+            if (elements.btnHeaderBuyShuttle) elements.btnHeaderBuyShuttle.style.display = 'inline-flex';
             elements.inputShuttlePrice.disabled = false;
         } else {
             elements.btnAdminToggle.className = 'btn btn-warning btn-sm';
             elements.adminBtnText.textContent = '🔑 Admin PIN';
             elements.adminIcon.setAttribute('data-lucide', 'shield');
             elements.btnChangePin.style.display = 'none';
+            if (elements.btnHeaderBuyShuttle) elements.btnHeaderBuyShuttle.style.display = 'none';
             elements.inputShuttlePrice.disabled = true;
         }
         if (window.lucide) lucide.createIcons();
@@ -1720,6 +1727,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function handleFundBuyShuttle() {
+        requireAdmin(() => {
+            const inputStr = prompt(`[👑 QUỸ CẦU ADMIN]\nNhập số hộp cầu vừa mua cho sân:`, "1");
+            if (!inputStr) return;
+            const boxes = parseFloat(inputStr);
+            if (isNaN(boxes) || boxes <= 0) return;
+
+            const boxPrice = shuttleBoxPrice || 305000;
+            const shuttlesPerBox = 12; // 1 hộp = 12 quả cầu
+            const totalShuttles = boxes * shuttlesPerBox;
+            const totalMoney = boxes * boxPrice;
+
+            const historyItem = {
+                mode: 'buy_shuttle_fund',
+                winners: '👑 Quỹ Cầu Admin',
+                losers: `Mua ${boxes} hộp cầu (${totalShuttles} quả)`,
+                penalty: -totalShuttles,
+                money: -totalMoney,
+                time: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+            };
+            historyLog.unshift(historyItem);
+
+            saveState();
+            if (window.SupabaseService && SupabaseService.isConfigured()) {
+                SupabaseService.addMatchHistory(historyItem);
+            }
+            renderHistoryLog();
+            soundEngine.playSuccessSound();
+            showToast(`📦 QUỸ CẦU: Admin đã mua ${boxes} hộp cầu (${totalShuttles} quả / -${formatMoney(totalMoney)})`);
+        });
+    }
+
     function renderHistoryLog() {
         elements.historyLogList.innerHTML = '';
         if (historyLog.length === 0) {
@@ -1730,15 +1769,27 @@ document.addEventListener('DOMContentLoaded', () => {
         historyLog.forEach(log => {
             const item = document.createElement('div');
             item.className = 'history-log-item';
-            item.innerHTML = `
-                <div>
-                    🏆 <strong>${log.winners}</strong> thắng ➔ ❌ <strong>${log.losers}</strong> thua
-                </div>
-                <div style="font-size: 0.8rem; opacity: 0.8; text-align: right;">
-                    +${log.penalty} quả / người (${formatMoney(log.money)})<br>
-                    <span style="opacity: 0.6;">${log.time}</span>
-                </div>
-            `;
+            if (log.mode === 'buy_shuttle_fund' || log.mode === 'buy_shuttle') {
+                item.innerHTML = `
+                    <div>
+                        📦 <strong>${log.winners}</strong>: ${log.losers}
+                    </div>
+                    <div style="font-size: 0.8rem; opacity: 0.8; text-align: right; color: var(--accent-emerald);">
+                        ${log.penalty} quả (${formatMoney(Math.abs(log.money))})<br>
+                        <span style="opacity: 0.6; color: var(--text-muted);">${log.time}</span>
+                    </div>
+                `;
+            } else {
+                item.innerHTML = `
+                    <div>
+                        🏆 <strong>${log.winners}</strong> thắng ➔ ❌ <strong>${log.losers}</strong> thua
+                    </div>
+                    <div style="font-size: 0.8rem; opacity: 0.8; text-align: right;">
+                        +${log.penalty} quả / người (${formatMoney(log.money)})<br>
+                        <span style="opacity: 0.6;">${log.time}</span>
+                    </div>
+                `;
+            }
             elements.historyLogList.appendChild(item);
         });
     }
@@ -1878,6 +1929,9 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.btnMode1v1.addEventListener('click', () => setMode('1v1'));
     elements.btnMode2v2.addEventListener('click', () => setMode('2v2'));
     elements.btnClearSelection.addEventListener('click', clearSelections);
+    if (elements.btnHeaderBuyShuttle) {
+        elements.btnHeaderBuyShuttle.addEventListener('click', handleFundBuyShuttle);
+    }
 
     // Bank settings modal (Admin Protected)
     elements.btnBankSettings.addEventListener('click', () => {

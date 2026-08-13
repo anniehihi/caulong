@@ -19,7 +19,7 @@
 
 :root {
     --bg-dark: #070913;
-    --bg-card: rgba(15, 18, 35, 0.78);
+    --bg-card: rgba(15, 18, 35, 0.85);
     --bg-card-solid: #0d1021;
     --bg-card-hover: #151a33;
     
@@ -242,58 +242,6 @@ body {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 14px;
-}
-
-@media (max-width: 768px) {
-    .main-content {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 600px) {
-    .app-header {
-        padding: 8px 10px;
-    }
-    
-    .logo-group {
-        gap: 6px;
-    }
-
-    .logo-icon {
-        font-size: 1.15rem;
-    }
-
-    .logo-text h1 {
-        font-size: 0.92rem;
-        letter-spacing: 0.5px;
-    }
-
-    .logo-text h1 span {
-        display: none;
-    }
-
-    .badge-status {
-        display: none;
-    }
-
-    .header-right-actions {
-        gap: 4px;
-    }
-
-    .icon-action-btn {
-        width: 32px;
-        height: 32px;
-    }
-
-    .btn-admin {
-        padding: 5px 8px;
-        font-size: 0.72rem;
-    }
-
-    #btnHeaderBuyShuttle {
-        padding: 5px 8px;
-        font-size: 0.72rem;
-    }
 }
 
 .panel-card {
@@ -733,6 +681,59 @@ body {
     flex-direction: column;
     gap: 8px;
     margin-top: 8px;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .app-header {
+        padding: 8px 10px;
+    }
+    
+    .logo-group {
+        gap: 6px;
+    }
+
+    .logo-icon {
+        font-size: 1.15rem;
+    }
+
+    .logo-text h1 {
+        font-size: 0.92rem;
+        letter-spacing: 0.5px;
+    }
+
+    .logo-text h1 span {
+        display: none;
+    }
+
+    .badge-status {
+        display: none;
+    }
+
+    .header-right-actions {
+        gap: 4px;
+    }
+
+    .icon-action-btn {
+        width: 32px;
+        height: 32px;
+    }
+
+    .btn-admin {
+        padding: 5px 8px;
+        font-size: 0.72rem;
+    }
+
+    #btnHeaderBuyShuttle {
+        padding: 5px 8px;
+        font-size: 0.72rem;
+    }
 }
     </style>
 </head>

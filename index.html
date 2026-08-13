@@ -1231,6 +1231,11 @@ CREATE TABLE IF NOT EXISTS match_history (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Tắt RLS để cho phép đọc/ghi dữ liệu từ ứng dụng web không bị chặn
+ALTER TABLE app_settings DISABLE ROW LEVEL SECURITY;
+ALTER TABLE players DISABLE ROW LEVEL SECURITY;
+ALTER TABLE match_history DISABLE ROW LEVEL SECURITY;
+
 -- Bật Realtime cho cả 3 bảng
 ALTER PUBLICATION supabase_realtime ADD TABLE app_settings, players, match_history;</pre>
                     <div style="margin-top: 12px; display: flex; justify-content: flex-end;">
@@ -1865,17 +1870,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const timeStr = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-        historyLog.unshift({
+        const matchRecord = {
             time: timeStr,
             winners: winnersStr,
             losers: losersStr,
             penalty: deltaQuả,
             money: deltaTiền,
             mode: currentMode
-        });
+        };
+        historyLog.unshift(matchRecord);
 
         soundEngine.playPenaltySound();
         saveState();
+
+        if (window.SupabaseService && SupabaseService.isConfigured()) {
+            SupabaseService.addMatchHistory(matchRecord);
+        }
 
         showToast(`🏆 ${winnersStr} THẮNG  ➔  ❌ ${losersStr} THUA (+${deltaQuả} quả / ${formatMoney(deltaTiền)})!`);
 

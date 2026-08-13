@@ -835,6 +835,16 @@ body {
                         </div>
                     </div>
 
+                    <!-- 24h Auto Reminder Banner -->
+                    <div id="autoReminderBanner" style="display: none; background: linear-gradient(135deg, rgba(0, 132, 255, 0.15) 0%, rgba(127, 0, 255, 0.2) 100%); border: 1px solid var(--web3-blue); border-radius: var(--radius-md); padding: 10px 14px; margin-top: 10px; margin-bottom: 10px; align-items: center; justify-content: space-between; gap: 10px;">
+                        <div style="font-size: 0.82rem; font-weight: 700; color: #fff;">
+                            ⏰ <span id="autoReminderText">Đã 24h trôi qua! Có anh em chưa đóng tiền đền cầu.</span>
+                        </div>
+                        <button class="btn btn-sm" id="btnAutoReminderSend" style="background: linear-gradient(135deg, #0084ff 0%, #00c6ff 100%); color: #fff; font-weight: 800; border: none; padding: 5px 12px; border-radius: 6px; font-size: 0.78rem; white-space: nowrap;">
+                            💬 Gửi Messenger Ngay
+                        </button>
+                    </div>
+
                     <!-- Player Penalty List -->
                     <div class="penalty-cards-list" id="penaltyList">
                         <!-- Populated by JS -->
@@ -1345,6 +1355,11 @@ document.addEventListener('DOMContentLoaded', () => {
         btnShareMessengerModal: document.getElementById('btnShareMessengerModal'),
         btnShareMessenger: document.getElementById('btnShareMessenger'),
 
+        // Auto Reminder 24h
+        autoReminderBanner: document.getElementById('autoReminderBanner'),
+        autoReminderText: document.getElementById('autoReminderText'),
+        btnAutoReminderSend: document.getElementById('btnAutoReminderSend'),
+
         // Add & Manage Players Modal
         addPlayerModal: document.getElementById('addPlayerModal'),
         addPlayerForm: document.getElementById('addPlayerForm'),
@@ -1706,6 +1721,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         historyLog.unshift(matchRecord);
 
+        localStorage.setItem('badminton_last_match_time', Date.now().toString());
         soundEngine.playPenaltySound();
         saveState();
 
@@ -1717,6 +1733,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
         clearSelections();
         renderLeaderboard();
+    }
+
+    function checkAuto24hReminder() {
+        if (!elements.autoReminderBanner) return;
+
+        const debtors = registeredPlayers.filter(name => (playerPenalties[name] || 0) > 0);
+        if (debtors.length === 0) {
+            elements.autoReminderBanner.style.display = 'none';
+            return;
+        }
+
+        const lastMatchTimeStr = localStorage.getItem('badminton_last_match_time');
+        const now = Date.now();
+
+        let hoursPassed = 24;
+        if (lastMatchTimeStr) {
+            const lastTime = parseInt(lastMatchTimeStr);
+            hoursPassed = (now - lastTime) / (1000 * 60 * 60);
+        }
+
+        if (hoursPassed >= 24) {
+            const daysPassed = Math.floor(hoursPassed / 24);
+            const timeLabel = daysPassed >= 1 ? `${daysPassed} ngày` : `${Math.floor(hoursPassed)} giờ`;
+            elements.autoReminderText.textContent = `⏰ Đã ${timeLabel} trôi qua từ trận gần nhất! Có ${debtors.length} người chưa thanh toán nợ cầu.`;
+            elements.autoReminderBanner.style.display = 'flex';
+        } else {
+            elements.autoReminderBanner.style.display = 'none';
+        }
     }
 
     function clearSelections() {
@@ -2017,6 +2061,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
         }
+
+        checkAuto24hReminder();
     }
 
     function handleFundBuyShuttle() {
@@ -2326,6 +2372,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (elements.btnShareMessengerModal) {
         elements.btnShareMessengerModal.addEventListener('click', shareMessengerAllDebts);
+    }
+
+    if (elements.btnAutoReminderSend) {
+        elements.btnAutoReminderSend.addEventListener('click', shareMessengerAllDebts);
     }
 
     elements.btnMarkPaid.addEventListener('click', () => {

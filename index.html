@@ -1935,6 +1935,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         selectedLosers.forEach(name => {
             playerPenalties[name] = (playerPenalties[name] || 0) + deltaQuả;
+            fundMoney += deltaTiền;
         });
 
         const timeStr = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
@@ -2280,6 +2281,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const name = e.target.getAttribute('data-name');
                     if (playerPenalties[name] > 0) {
                         playerPenalties[name] = Math.max(0, playerPenalties[name] - 0.5);
+                        fundMoney = Math.max(0, fundMoney - (0.5 * shuttlePrice));
                         saveState();
                         renderLeaderboard();
                     }
@@ -2290,6 +2292,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.addEventListener('click', (e) => {
                     const name = e.target.getAttribute('data-name');
                     playerPenalties[name] = (playerPenalties[name] || 0) + 0.5;
+                    fundMoney += (0.5 * shuttlePrice);
                     saveState();
                     renderLeaderboard();
                 });

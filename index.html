@@ -1325,48 +1325,28 @@ ALTER PUBLICATION supabase_realtime ADD TABLE app_settings, players, match_histo
 
         <!-- Edit Shuttle Fund Modal -->
         <div class="modal-backdrop" id="editFundModal">
-            <div class="modal-content" style="max-width: 520px;">
+            <div class="modal-content small-modal" style="max-width: 440px;">
                 <div class="modal-header">
-                    <h3><i data-lucide="edit-3"></i> Sửa & Điều Chỉnh Quỹ Cầu</h3>
+                    <h3><i data-lucide="wallet"></i> Sửa Tiền Quỹ Cầu</h3>
                     <button class="btn-close" id="btnCloseEditFund"><i data-lucide="x"></i></button>
                 </div>
                 <div class="modal-body">
-                    <form id="editFundForm" style="margin-bottom: 16px;">
+                    <form id="editFundForm">
                         <div class="form-group">
-                            <label for="fundActionType">Hình thức điều chỉnh:</label>
-                            <select id="fundActionType" class="form-control">
-                                <option value="box" selected>📦 Mua hộp cầu cho sân (1 hộp = 12 quả)</option>
-                                <option value="add">➕ Cộng thêm cầu vào quỹ (Tài trợ/Nhập dư)</option>
-                                <option value="subtract">➖ Trừ bớt cầu khỏi quỹ (Cầu hỏng/Mất/Xuất quỹ)</option>
-                                <option value="set">🎯 Đặt lại tổng số cầu quỹ (Nhập trực tiếp số dư)</option>
-                            </select>
+                            <label for="fundMoneyInput" style="font-weight: 800; font-size: 0.9rem; color: var(--accent-gold);">
+                                NHẬP SỐ TIỀN QUỸ CẦU HIỆN CÓ (Đ):
+                            </label>
+                            <input type="number" id="fundMoneyInput" step="1000" min="0" placeholder="VD: 500000" required class="form-control" style="font-size: 1.3rem; font-weight: 800; text-align: center; margin-top: 6px; letter-spacing: 1px; color: var(--web3-emerald);">
+                            <span style="font-size: 0.78rem; color: var(--text-muted); margin-top: 6px; text-align: center; display: block;">
+                                💡 Nhập trực tiếp số tiền dư hiện tại của quỹ cầu (ví dụ: 500000 hoặc 1000000).
+                            </span>
                         </div>
-                        <div class="form-group" style="margin-top: 10px;">
-                            <label for="fundShuttleCount" id="fundShuttleCountLabel">Số quả cầu điều chỉnh:</label>
-                            <input type="number" id="fundShuttleCount" step="0.5" min="0" placeholder="VD: 6 hoặc 12" required class="form-control">
-                        </div>
-                        <div class="form-group" style="margin-top: 10px;">
-                            <label for="fundMoneyAmount">Số tiền quy đổi tương ứng (đ):</label>
-                            <input type="number" id="fundMoneyAmount" step="1000" placeholder="Tự động tính theo giá quả cầu..." class="form-control">
-                            <span style="font-size: 0.75rem; color: var(--text-dim); margin-top: 2px;">💡 Tự động tính = Số quả × Giá 1 quả, bạn có thể chỉnh sửa lại.</span>
-                        </div>
-                        <div class="form-group" style="margin-top: 10px;">
-                            <label for="fundNote">Lý do / Ghi chú điều chỉnh:</label>
-                            <input type="text" id="fundNote" placeholder="VD: Tài trợ cầu, Cầu hỏng, Sửa số dư..." class="form-control">
-                        </div>
-                        <div class="form-actions" style="margin-top: 16px;">
-                            <button type="submit" class="btn btn-success btn-block">💾 Lưu Điều Chỉnh Quỹ</button>
+                        <div class="form-actions" style="margin-top: 18px;">
+                            <button type="submit" class="btn btn-success btn-block btn-lg" style="font-weight: 800; font-size: 1rem;">
+                                💾 Lưu Số Tiền Quỹ
+                            </button>
                         </div>
                     </form>
-
-                    <div style="border-top: 1px dashed var(--border-color); padding-top: 12px; margin-top: 16px;">
-                        <h4 style="font-size: 0.85rem; color: var(--web3-cyan); margin-bottom: 10px; font-weight: 800;">
-                            📜 LỊCH SỬ GIAO DỊCH QUỸ CẦU (BẤM XÓA NẾU NHẬP SAI):
-                        </h4>
-                        <div id="fundHistoryList" style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto;">
-                            <!-- Populated dynamically -->
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -1478,6 +1458,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentMode = '2v2'; // '2v2' or '1v1'
     let shuttlePrice = parseInt(localStorage.getItem('badminton_shuttle_price') || '26000');
     let shuttleBoxPrice = parseInt(localStorage.getItem('badminton_shuttle_box_price') || '305000');
+    let fundMoney = parseInt(localStorage.getItem('badminton_fund_money') || '0');
     let bankConfig = JSON.parse(localStorage.getItem('badminton_bank_config') || '{"bankId":"MB","accountNo":"","accountName":"","sepayToken":""}');
     let registeredPlayers = JSON.parse(localStorage.getItem('badminton_players') || '["Toàn", "Tú", "Tiến"]');
     let playerPenalties = JSON.parse(localStorage.getItem('badminton_penalties') || '{}');
@@ -1515,12 +1496,7 @@ document.addEventListener('DOMContentLoaded', () => {
         editFundModal: document.getElementById('editFundModal'),
         btnCloseEditFund: document.getElementById('btnCloseEditFund'),
         editFundForm: document.getElementById('editFundForm'),
-        fundActionType: document.getElementById('fundActionType'),
-        fundShuttleCount: document.getElementById('fundShuttleCount'),
-        fundShuttleCountLabel: document.getElementById('fundShuttleCountLabel'),
-        fundMoneyAmount: document.getElementById('fundMoneyAmount'),
-        fundNote: document.getElementById('fundNote'),
-        fundHistoryList: document.getElementById('fundHistoryList'),
+        fundMoneyInput: document.getElementById('fundMoneyInput'),
 
         // Admin PIN Modal
         adminPinModal: document.getElementById('adminPinModal'),
@@ -1746,6 +1722,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     shuttleBoxPrice = bankConfig.shuttleBoxPrice;
                     if (elements.inputShuttleBoxPrice) elements.inputShuttleBoxPrice.value = shuttleBoxPrice;
                 }
+                if (bankConfig.fundMoney !== undefined) {
+                    fundMoney = parseInt(bankConfig.fundMoney || 0);
+                    localStorage.setItem('badminton_fund_money', fundMoney.toString());
+                }
             }
         }
 
@@ -1777,6 +1757,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Save local backup
         localStorage.setItem('badminton_shuttle_price', shuttlePrice.toString());
         localStorage.setItem('badminton_shuttle_box_price', shuttleBoxPrice.toString());
+        localStorage.setItem('badminton_fund_money', fundMoney.toString());
         localStorage.setItem('badminton_bank_config', JSON.stringify(bankConfig));
         localStorage.setItem('badminton_players', JSON.stringify(registeredPlayers));
         localStorage.setItem('badminton_penalties', JSON.stringify(playerPenalties));
@@ -1823,6 +1804,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (freshSettings.bank_config) {
                         bankConfig = typeof freshSettings.bank_config === 'string' ? JSON.parse(freshSettings.bank_config) : freshSettings.bank_config;
                         if (bankConfig.shuttleBoxPrice) shuttleBoxPrice = bankConfig.shuttleBoxPrice;
+                        if (bankConfig.fundMoney !== undefined) {
+                            fundMoney = parseInt(bankConfig.fundMoney || 0);
+                            localStorage.setItem('badminton_fund_money', fundMoney.toString());
+                        }
                     }
                     elements.inputShuttlePrice.value = shuttlePrice;
                     if (elements.inputShuttleBoxPrice) elements.inputShuttleBoxPrice.value = shuttleBoxPrice;
@@ -1834,8 +1819,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function saveState() {
         bankConfig.shuttleBoxPrice = shuttleBoxPrice;
+        bankConfig.fundMoney = fundMoney;
         localStorage.setItem('badminton_shuttle_price', shuttlePrice.toString());
         localStorage.setItem('badminton_shuttle_box_price', shuttleBoxPrice.toString());
+        localStorage.setItem('badminton_fund_money', fundMoney.toString());
         localStorage.setItem('badminton_bank_config', JSON.stringify(bankConfig));
         localStorage.setItem('badminton_players', JSON.stringify(registeredPlayers));
         localStorage.setItem('badminton_penalties', JSON.stringify(playerPenalties));
@@ -2268,21 +2255,8 @@ document.addEventListener('DOMContentLoaded', () => {
             playersTotalShuttles += (playerPenalties[name] || 0);
         });
 
-        // Calculate total shuttles & money spent/adjusted by Admin Fund
-        let totalFundShuttles = 0;
-        let totalFundMoney = 0;
-        historyLog.forEach(log => {
-            if (log.mode === 'buy_shuttle_fund' || log.mode === 'adjust_shuttle_fund') {
-                totalFundShuttles += (-log.penalty || 0);
-                totalFundMoney += (-log.money || 0);
-            }
-        });
-
-        const netTotalShuttles = playersTotalShuttles - totalFundShuttles;
-        const netTotalMoney = (playersTotalShuttles * shuttlePrice) - totalFundMoney;
-
-        elements.totalShuttlesBadge.textContent = `${netTotalShuttles} quả`;
-        elements.totalMoneyBadge.textContent = netTotalMoney < 0 ? `-${formatMoney(Math.abs(netTotalMoney))}` : formatMoney(netTotalMoney);
+        elements.totalShuttlesBadge.textContent = `${playersTotalShuttles} quả nợ`;
+        elements.totalMoneyBadge.textContent = `Quỹ: ${formatMoney(fundMoney)}`;
 
         // Register Pay QR & Buy Shuttle button events
         document.querySelectorAll('.btn-pay-qr:not(.btn-buy-shuttle)').forEach(btn => {
@@ -2327,102 +2301,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function openEditFundModal() {
         requireAdmin(() => {
-            renderFundHistoryList();
+            elements.fundMoneyInput.value = fundMoney || '';
             elements.editFundModal.classList.add('active');
-        });
-    }
-
-    function renderFundHistoryList() {
-        if (!elements.fundHistoryList) return;
-        elements.fundHistoryList.innerHTML = '';
-
-        const fundLogs = [];
-        historyLog.forEach((log, originalIndex) => {
-            if (log.mode === 'buy_shuttle_fund' || log.mode === 'adjust_shuttle_fund') {
-                fundLogs.push({ ...log, originalIndex });
-            }
-        });
-
-        if (fundLogs.length === 0) {
-            elements.fundHistoryList.innerHTML = '<p class="empty-msg" style="font-size: 0.8rem; padding: 10px;">Chưa có giao dịch quỹ nào.</p>';
-            return;
-        }
-
-        fundLogs.forEach(log => {
-            const item = document.createElement('div');
-            item.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-color); border-radius: 10px; font-size: 0.82rem;';
-
-            const isAddition = log.penalty <= 0;
-            const shuttleDisplay = isAddition ? `+${Math.abs(log.penalty)} quả` : `-${Math.abs(log.penalty)} quả`;
-            const color = isAddition ? 'var(--web3-emerald)' : 'var(--web3-rose)';
-
-            item.innerHTML = `
-                <div style="display: flex; flex-direction: column; gap: 2px;">
-                    <div><strong style="color: var(--web3-cyan);">${log.winners || '👑 Quỹ Admin'}</strong> - <span>${log.losers}</span></div>
-                    <div style="font-size: 0.75rem; color: var(--text-dim);">${log.time}</div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <div style="text-align: right; font-weight: 700; color: ${color};">
-                        ${shuttleDisplay} (${formatMoney(Math.abs(log.money || 0))})
-                    </div>
-                    <button class="btn btn-danger btn-sm btn-del-fund-log" data-index="${log.originalIndex}" title="Xóa giao dịch này" style="padding: 3px 7px; font-size: 0.72rem;">
-                        🗑️ Xóa
-                    </button>
-                </div>
-            `;
-            elements.fundHistoryList.appendChild(item);
-        });
-
-        elements.fundHistoryList.querySelectorAll('.btn-del-fund-log').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const idx = parseInt(e.currentTarget.getAttribute('data-index'));
-                deleteFundHistoryItem(idx);
-            });
-        });
-    }
-
-    function deleteFundHistoryItem(originalIndex) {
-        requireAdmin(() => {
-            if (originalIndex >= 0 && originalIndex < historyLog.length) {
-                const removedItem = historyLog.splice(originalIndex, 1)[0];
-                saveState();
-                renderLeaderboard();
-                renderHistoryLog();
-                renderFundHistoryList();
-                showToast(`🗑️ Đã xóa giao dịch quỹ: "${removedItem.losers}"`);
-            }
-        });
-    }
-
-    function handleFundBuyShuttle() {
-        requireAdmin(() => {
-            const inputStr = prompt(`[👑 QUỸ CẦU ADMIN]\nNhập số hộp cầu vừa mua cho sân:`, "1");
-            if (!inputStr) return;
-            const boxes = parseFloat(inputStr);
-            if (isNaN(boxes) || boxes <= 0) return;
-
-            const boxPrice = shuttleBoxPrice || 305000;
-            const shuttlesPerBox = 12; // 1 hộp = 12 quả cầu
-            const totalShuttles = boxes * shuttlesPerBox;
-            const totalMoney = boxes * boxPrice;
-
-            const historyItem = {
-                mode: 'buy_shuttle_fund',
-                winners: '👑 Quỹ Cầu Admin',
-                losers: `Mua ${boxes} hộp cầu (${totalShuttles} quả)`,
-                penalty: -totalShuttles,
-                money: -totalMoney,
-                time: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
-            };
-            historyLog.unshift(historyItem);
-
-            saveState();
-            if (window.SupabaseService && SupabaseService.isConfigured()) {
-                SupabaseService.addMatchHistory(historyItem);
-            }
-            renderHistoryLog();
-            soundEngine.playSuccessSound();
-            showToast(`📦 QUỸ CẦU: Admin đã mua ${boxes} hộp cầu (${totalShuttles} quả / -${formatMoney(totalMoney)})`);
+            setTimeout(() => {
+                elements.fundMoneyInput.focus();
+                elements.fundMoneyInput.select();
+            }, 150);
         });
     }
 
@@ -2436,19 +2320,14 @@ document.addEventListener('DOMContentLoaded', () => {
         historyLog.forEach(log => {
             const item = document.createElement('div');
             item.className = 'history-log-item';
-            if (log.mode === 'buy_shuttle_fund' || log.mode === 'adjust_shuttle_fund' || log.mode === 'buy_shuttle') {
-                const isFundAdd = log.penalty <= 0;
-                const icon = log.mode === 'adjust_shuttle_fund' ? '✏️' : '📦';
-                const countStr = isFundAdd ? `+${Math.abs(log.penalty)} quả quỹ` : `-${Math.abs(log.penalty)} quả quỹ`;
-                const metaColor = isFundAdd ? 'color: var(--web3-emerald);' : 'color: var(--web3-rose);';
-
+            if (log.mode === 'adjust_fund_money' || log.mode === 'buy_shuttle_fund' || log.mode === 'adjust_shuttle_fund' || log.mode === 'buy_shuttle') {
                 item.innerHTML = `
                     <div class="history-log-item-details">
-                        <span>${icon} <strong>${log.winners}</strong></span>
+                        <span>💰 <strong>${log.winners}</strong></span>
                         <span style="color: var(--text-muted); font-size: 0.82rem;">${log.losers}</span>
                     </div>
-                    <div class="history-log-item-meta" style="${metaColor}">
-                        <span>${countStr} (${formatMoney(Math.abs(log.money))})</span>
+                    <div class="history-log-item-meta" style="color: var(--web3-emerald);">
+                        <span>${formatMoney(Math.abs(log.money))}</span>
                         <span style="color: var(--text-dim);">${log.time}</span>
                     </div>
                 `;
@@ -2624,116 +2503,25 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (elements.fundShuttleCount) {
-        elements.fundShuttleCount.addEventListener('input', () => {
-            const type = elements.fundActionType.value;
-            const count = parseFloat(elements.fundShuttleCount.value);
-            if (type === 'box') {
-                const boxPrice = shuttleBoxPrice || 305000;
-                if (!isNaN(count) && count > 0) {
-                    elements.fundMoneyAmount.value = count * boxPrice;
-                } else {
-                    elements.fundMoneyAmount.value = '';
-                }
-            } else if (type !== 'set') {
-                if (!isNaN(count) && count > 0) {
-                    elements.fundMoneyAmount.value = Math.round(count * shuttlePrice);
-                } else {
-                    elements.fundMoneyAmount.value = '';
-                }
-            }
-        });
-    }
-
-    if (elements.fundActionType) {
-        elements.fundActionType.addEventListener('change', () => {
-            const type = elements.fundActionType.value;
-            if (type === 'box') {
-                elements.fundShuttleCountLabel.textContent = "Nhập số hộp cầu vừa mua cho sân (hộp):";
-                elements.fundShuttleCount.placeholder = "VD: 1 hoặc 2";
-                const count = parseFloat(elements.fundShuttleCount.value) || 1;
-                elements.fundShuttleCount.value = count;
-                elements.fundMoneyAmount.value = count * (shuttleBoxPrice || 305000);
-            } else if (type === 'set') {
-                elements.fundShuttleCountLabel.textContent = "Nhập tổng số quả cầu quỹ mới:";
-                elements.fundShuttleCount.placeholder = "VD: 24 (số dư tổng)";
-                elements.fundMoneyAmount.value = '';
-            } else {
-                elements.fundShuttleCountLabel.textContent = "Số quả cầu điều chỉnh:";
-                elements.fundShuttleCount.placeholder = "VD: 6 hoặc 12";
-                const count = parseFloat(elements.fundShuttleCount.value);
-                if (!isNaN(count) && count > 0) {
-                    elements.fundMoneyAmount.value = Math.round(count * shuttlePrice);
-                }
-            }
-        });
-    }
-
     if (elements.editFundForm) {
         elements.editFundForm.addEventListener('submit', (e) => {
             e.preventDefault();
             if (!isAdmin) return;
 
-            const actionType = elements.fundActionType.value;
-            const countVal = parseFloat(elements.fundShuttleCount.value);
-            let moneyVal = parseFloat(elements.fundMoneyAmount.value);
-            const noteVal = elements.fundNote.value.trim();
-
-            if (isNaN(countVal) || countVal <= 0) {
-                showToast("⚠️ Vui lòng nhập số lượng hợp lệ (> 0)!");
+            const inputVal = parseInt(elements.fundMoneyInput.value);
+            if (isNaN(inputVal) || inputVal < 0) {
+                showToast("⚠️ Vui lòng nhập số tiền hợp lệ!");
                 return;
             }
 
-            let penaltyDelta = 0;
-            let moneyDelta = 0;
-            let actionLabel = "";
-            let modeName = "adjust_shuttle_fund";
-
-            // Current total fund shuttles
-            let currentFundShuttles = 0;
-            historyLog.forEach(log => {
-                if (log.mode === 'buy_shuttle_fund' || log.mode === 'adjust_shuttle_fund') {
-                    currentFundShuttles += (-log.penalty || 0);
-                }
-            });
-
-            if (actionType === 'box') {
-                const totalShuttles = countVal * 12;
-                penaltyDelta = -totalShuttles;
-                const boxPrice = shuttleBoxPrice || 305000;
-                if (isNaN(moneyVal)) moneyVal = countVal * boxPrice;
-                moneyDelta = -Math.abs(moneyVal);
-                actionLabel = noteVal || `Mua ${countVal} hộp cầu (${totalShuttles} quả)`;
-                modeName = 'buy_shuttle_fund';
-            } else if (actionType === 'add') {
-                penaltyDelta = -countVal;
-                if (isNaN(moneyVal)) moneyVal = countVal * shuttlePrice;
-                moneyDelta = -Math.abs(moneyVal);
-                actionLabel = noteVal || `Cộng ${countVal} quả cầu vào quỹ`;
-            } else if (actionType === 'subtract') {
-                penaltyDelta = countVal;
-                if (isNaN(moneyVal)) moneyVal = countVal * shuttlePrice;
-                moneyDelta = Math.abs(moneyVal);
-                actionLabel = noteVal || `Trừ ${countVal} quả cầu khỏi quỹ`;
-            } else if (actionType === 'set') {
-                const diff = countVal - currentFundShuttles;
-                if (diff === 0) {
-                    showToast("Số dư quả cầu trong quỹ không thay đổi!");
-                    return;
-                }
-                penaltyDelta = -diff;
-                const autoMoney = Math.abs(diff) * shuttlePrice;
-                if (isNaN(moneyVal)) moneyVal = autoMoney;
-                moneyDelta = diff > 0 ? -Math.abs(moneyVal) : Math.abs(moneyVal);
-                actionLabel = noteVal || `Đặt lại tổng số cầu quỹ thành ${countVal} quả (Chênh lệch: ${diff > 0 ? '+' : ''}${diff} quả)`;
-            }
+            fundMoney = inputVal;
 
             const historyItem = {
-                mode: modeName,
+                mode: 'adjust_fund_money',
                 winners: '👑 Quỹ Cầu Admin',
-                losers: actionLabel,
-                penalty: penaltyDelta,
-                money: moneyDelta,
+                losers: `Nhập trực tiếp số tiền quỹ: ${formatMoney(fundMoney)}`,
+                penalty: 0,
+                money: fundMoney,
                 time: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
             };
 
@@ -2745,13 +2533,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             renderLeaderboard();
             renderHistoryLog();
-            renderFundHistoryList();
             soundEngine.playSuccessSound();
-            showToast(`📦 QUỸ CẦU: Đã cập nhật (${actionLabel})`);
-
-            elements.fundShuttleCount.value = '';
-            elements.fundMoneyAmount.value = '';
-            elements.fundNote.value = '';
+            showToast(`💰 ĐÃ LƯU: Số tiền quỹ là ${formatMoney(fundMoney)}`);
             elements.editFundModal.classList.remove('active');
         });
     }
